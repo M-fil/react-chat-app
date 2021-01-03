@@ -24,8 +24,10 @@ io.on('connection', (socket) => {
   });
 
   socket.on('conversationCreate', (conversationId) => {
+    console.log('conversationId', conversationId)
     socket.join(conversationId);
-    io.to(conversationId).emit('adminJoin', conversationId);
+    io.sockets.emit('adminJoin', conversationId);
+    // io.in(conversationId).emit('adminJoin', conversationId);
   });
 
   socket.on('error', (error) => {
