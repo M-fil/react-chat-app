@@ -54,7 +54,9 @@
     ]
   },
   "devDependencies": {
+    "@types/react-helmet": "^6.1.0",
     "@types/react-redux": "^7.1.14",
+    "@types/react-router-dom": "^5.1.7",
     "@types/shortid": "0.0.29",
     "@types/styled-components": "^5.1.7"
   }

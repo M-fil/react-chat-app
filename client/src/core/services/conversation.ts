@@ -45,10 +45,11 @@ export const createNewConversationInDB = (
 }
 
 export const addMessageToConversationFromDB = (
-  userId: string, conversationId: string, message: MessageEntity
+  conversationId: string, message: MessageEntity,
 ) => {
-  return getLinkOnConversation(userId, ['messages'], conversationId).link
-    .push(message);
+  return firebaseServices.rdb
+    .ref(`${DBCollections.Messages}/${conversationId}`)
+    .push(message)
 };
 
 export const getConversationsOfCurrentUser = (userId: string) => {
@@ -71,3 +72,8 @@ export const getMessagesOfConversation = (
       return data;
     });
 }
+
+export const removeConversationFromDB = (userId: string, conversationId: string) => {
+  return getLinkOnConversation(userId, [], conversationId).link
+    .remove();
+};

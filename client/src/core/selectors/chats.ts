@@ -9,3 +9,8 @@ export const selectChats = createSelector(
   selectChatsState,
   (state: State) => state.chats || [],
 );
+
+export const selectConversations = createSelector(
+  selectChatsState,
+  (state: State) => state.conversations || [],
+);

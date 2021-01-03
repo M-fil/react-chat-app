@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useSelector } from 'react-redux';
-import shortid from 'shortid';
 
 import ChatMessagesContainer from './styled';
 import { socket } from '../../../../App';
@@ -44,23 +43,6 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ type, conversationId = '' }
       });
     }
   }, [currentUserUid, scrollToTheLastMessage, type]);
-
-  useEffect(() => {
-    if (type === 'group') {
-      socket.on(SocketEvents.AdminJoinToConversation, (conversationId: string) => {
-        const message: MessageEntity = {
-          id: shortid.generate(),
-          text: `${currentUserEmail} created this chat`,
-          createdAt: new Date(Date.now()),
-          isNotification: true,
-        };
-        setMessages((prevMessages) => ([...prevMessages, message]));
-        ConversationServices.addMessageToConversationFromDB(
-          currentUserUid, conversationId, message,
-        );
-      });
-    }
-  }, [currentUserEmail, currentUserAvatar, currentUserUid, type]);
 
   useEffect(() => {
     setIsLoading(true);

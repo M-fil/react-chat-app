@@ -1,7 +1,9 @@
-import { UserEntity } from "../reducers/auth";
+import { UserEntity } from '../reducers/auth';
+import { ConversationEntity } from '../../interfaces/conversation';
 
 export enum ChatActionTypes {
   UpdateCurrentUserChats = '[Chats] UpdateCurrentUserChats',
+  UpdateCurrentUserConversations = '[Chats] UpdateCurrentUserConversations',
 }
 
 export interface UpdateCurrentUserChatsActionType {
@@ -9,4 +11,9 @@ export interface UpdateCurrentUserChatsActionType {
   payload: { chats: UserEntity[] },
 }
 
-export type ChatAction = UpdateCurrentUserChatsActionType;
+export interface UpdateCurrentUserConversations {
+  type: typeof ChatActionTypes.UpdateCurrentUserConversations,
+  payload: { conversations: ConversationEntity[] },
+}
+
+export type ChatAction = UpdateCurrentUserChatsActionType | UpdateCurrentUserConversations;

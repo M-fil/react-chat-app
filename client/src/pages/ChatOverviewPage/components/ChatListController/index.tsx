@@ -2,17 +2,13 @@ import React, { useCallback, useState } from 'react';
 import { Button, AutoComplete, message, Checkbox } from 'antd';
 import { useSelector } from 'react-redux';
 
-import * as UserServices from '../../../../core/services/users';
 import * as ChatServices from '../../../../core/services/chats';
 import * as ConversationServices from '../../../../core/services/conversation';
 import { selectCurrentUser } from '../../../../core/selectors/auth';
 import { selectChats } from '../../../../core/selectors/chats';
-import { updateCurrentUserChatsAction } from '../../../../core/redux/actions/chat';
-import { MainRoutes } from '../../../../core/constants/routes/main-routes';
 import { UserEntity } from '../../../../core/redux/reducers/auth';
 import { socket } from '../../../../App';
 import { SocketEvents } from '../../../../core/constants/events';
-import { ConversationEntity } from '../../../../core/interfaces/conversation';
 
 const { Option } = AutoComplete;
 export type SelectListItemType = 'conversations' | 'private_messages';

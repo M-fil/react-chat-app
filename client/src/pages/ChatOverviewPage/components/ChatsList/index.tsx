@@ -9,8 +9,8 @@ import * as UserServices from '../../../../core/services/users';
 import * as ChatServices from '../../../../core/services/chats';
 import * as ConversationServices from '../../../../core/services/conversation';
 import { selectCurrentUser } from '../../../../core/selectors/auth';
-import { selectChats } from '../../../../core/selectors/chats';
-import { updateCurrentUserChatsAction } from '../../../../core/redux/actions/chat';
+import { selectChats, selectConversations } from '../../../../core/selectors/chats';
+import { updateCurrentUserChatsAction, updateCurrentUserConversationsAction } from '../../../../core/redux/actions/chat';
 import { UserEntity } from '../../../../core/redux/reducers/auth';
 import DeleteModal from './components/DeleteModal';
 import { MainRoutes } from '../../../../core/constants/routes/main-routes';
@@ -18,6 +18,7 @@ import { socket } from '../../../../App';
 import { SocketEvents } from '../../../../core/constants/events';
 import { ConversationEntity } from '../../../../core/interfaces/conversation';
 import ChatListController from '../ChatListController';
+import { MessagesType } from '../../../../core/components/Chat/ChatMessages';
 
 export interface SearchUserOption {
   email: string,
@@ -26,34 +27,38 @@ export interface SearchUserOption {
 
 const ChatList: React.FC = () => {
   const [users, setUsers] = useState<UserEntity[]>([]);
-  const [targetChatToDelete, setTargetChatToDelete] = useState<SearchUserOption | null>(null);
+  const [targetIdToDelete, setTargetIdToDelete] = useState<string>('');
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState<boolean>(false);
-  const [conversations, setConversations] = useState<ConversationEntity[]>([]);
   const currentUser = useSelector(selectCurrentUser);
   const chats = useSelector(selectChats);
+  const conversations = useSelector(selectConversations);
   const dispatch = useDispatch();
 
   useEffect(() => {
-    UserServices.getLinkOnUserByUid(currentUser.uid)
+    const getLinkOnUser = UserServices.getLinkOnUserByUid(currentUser.uid);
+    getLinkOnUser
       .on('value', (snapshot) => {
         const data = snapshot.val();
         dispatch(updateCurrentUserChatsAction(data.chats))
       });
 
     return () => {
-      UserServices.getLinkOnUserByUid(currentUser.uid).off('value');
+      getLinkOnUser.off('value');
     }
   }, [currentUser.uid, dispatch]);
 
   useEffect(() => {
-    ConversationServices.getConversationsOfCurrentUser(currentUser.uid)
-      .then((conversationsFromDB) => {
-        setConversations(conversationsFromDB ? Object.values(conversationsFromDB) : []);
-      })
-      .catch((error) => {
-        socket.emit(SocketEvents.Error, error);
+    const getConversation = ConversationServices.getLinkOnConversation(currentUser.uid, [], '').link;
+    getConversation
+      .on('value', (snapshot) => {
+        const data = snapshot.val();
+        dispatch(updateCurrentUserConversationsAction(data ? Object.values(data) : []));
       });
-  }, [currentUser.uid, setConversations]);
+
+    return () => {
+      getConversation.off('value');
+    }
+  }, [currentUser.uid, dispatch]);
 
   useEffect(() => {
     UserServices
@@ -72,16 +77,26 @@ const ChatList: React.FC = () => {
     const target = event.target as HTMLDivElement;
     const targetElement = target.closest('[data-user-chat-uid]') as HTMLDivElement;
     const targetDeleteButton = target.closest('[data-delete-chat-button') as HTMLButtonElement;
+    const deleteType = targetDeleteButton && targetDeleteButton.dataset.deleteChatButton as MessagesType;
     const targetUid = targetElement && targetElement.dataset.userChatUid;
 
+    console.log('targetUid', targetUid)
     if (targetDeleteButton && targetUid) {
-      const chatToDelete = users.find((user) => user.uid === targetUid);
-      if (chatToDelete) {
-        setIsDeleteModalVisible(true);
-        setTargetChatToDelete(chatToDelete);
+      if (deleteType === 'private') {
+        const chatToDelete = users.find((user) => user.uid === targetUid);
+        if (chatToDelete) {
+          setIsDeleteModalVisible(true);
+          setTargetIdToDelete(chatToDelete.uid);
+        }
+      } else {
+        const conversationToDelete = conversations.find((conversation) => conversation.id === targetUid);
+        if (conversationToDelete) {
+          setIsDeleteModalVisible(true);
+          setTargetIdToDelete(conversationToDelete.id);
+        }
       }
     }
-  }, [users, setTargetChatToDelete]);
+  }, [users, setTargetIdToDelete, conversations, setIsDeleteModalVisible]);
 
   return (
     <ChatListContainer>
@@ -101,7 +116,7 @@ const ChatList: React.FC = () => {
             <Button
               type="primary"
               className="delete-chat-button"
-              data-delete-chat-button
+              data-delete-chat-button="private"
             >
               <DeleteOutlined />
             </Button>
@@ -119,7 +134,7 @@ const ChatList: React.FC = () => {
             <Button
               type="primary"
               className="delete-chat-button"
-              data-delete-chat-button
+              data-delete-chat-button="group"
             >
               <DeleteOutlined />
             </Button>
@@ -127,7 +142,7 @@ const ChatList: React.FC = () => {
         ))}
       </div>
       <DeleteModal
-        targetChat={targetChatToDelete}
+        targetIdToDelete={targetIdToDelete}
         isVisible={isDeleteModalVisible}
         setIsVisible={setIsDeleteModalVisible}
       />
