@@ -1,15 +1,21 @@
-import { UserEntity } from '../reducers/auth';
 import { ChatAction, ChatActionTypes } from '../action-types/chat';
 import { ConversationEntity } from '../../interfaces/conversation';
+import { MessageEntity, PrivateChatEntity } from '../../interfaces/chat';
 
 export interface State {
-  chats: UserEntity[],
+  chats: string[],
   conversations: ConversationEntity[],
+  privateChats: PrivateChatEntity[],
+  currentMessages: MessageEntity[],
+  currentChatId: string,
 }
 
 const initialState: State = {
   chats: [],
   conversations: [],
+  privateChats: [],
+  currentMessages: [],
+  currentChatId: '',
 }
 
 export const chatsReducer = (state: State = initialState, action: ChatAction): State => {
@@ -23,6 +29,21 @@ export const chatsReducer = (state: State = initialState, action: ChatAction): S
       return {
         ...state,
         conversations: action.payload.conversations,
+      };
+    case ChatActionTypes.UpdateCurrentMessages:
+      return {
+        ...state,
+        currentMessages: action.payload.messages,
+      };
+    case ChatActionTypes.SetCurrentChatId:
+      return {
+        ...state,
+        currentChatId: action.payload.chatId,
+      };
+    case ChatActionTypes.UpdateCurrentUserPrivateChats:
+      return {
+        ...state,
+        privateChats: action.payload.privateChats,
       };
     default:
       return state;

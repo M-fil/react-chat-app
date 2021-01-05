@@ -1,60 +1,80 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
 
 import ChatNavBar from '../../core/components/Chat/ChatNavBar';
 import ChatPageContainer from '../ChatOverviewPage/styled';
 import ChatMessages from '../../core/components/Chat/ChatMessages';
 import ChatInputContainer from '../../core/components/Chat/ChatInputContainer';
 import * as UserServices from '../../core/services/users';
+import * as PrivateChatServices from '../../core/services/private-chats';
 import { UserEntity } from '../../core/redux/reducers/auth';
+import { PrivateChatEntity } from '../../core/interfaces/chat';
 import Loader from '../../core/components/Loader';
 import { MainRoutes } from '../../core/constants/routes/main-routes';
 import { socket } from '../../App';
 import { SocketEvents } from '../../core/constants/events';
 import { ChatPageParams } from '../../core/interfaces/routes';
+import { selectUserUid } from '../../core/selectors/auth';
+import { setCurrentChatIdAction } from '../../core/redux/actions/chat';
 
 const ChatWithUserPage: React.FC = () => {
   const params: ChatPageParams = useParams();
-  const userId = useMemo(() => params.userId, [params.userId]);
-  const [interlocutor, setInterlocutor] = useState<UserEntity | null>(null);
+  const chatId = useMemo(() => params.chatId, [params.chatId]);
+  const currentUserUid = useSelector(selectUserUid);
+  const [currentChat, setCurrentChat] = useState<PrivateChatEntity | null>(null);
+  const [interlocutorName, setInterlocutorName] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    socket.emit(SocketEvents.CreateChat, currentUserUid);
+  }, [currentUserUid, chatId]);
+
+  useEffect(() => {
+    if (currentChat) {
+      dispatch(setCurrentChatIdAction(currentChat.id));
+    }
+  }, [currentChat, dispatch]);
 
   useEffect(() => {
     setIsLoading(true);
-    UserServices
-      .getUserFromDBByUid(userId)
-      .then((user) => {
-        if (!user) {
-          throw new Error();
-        }
-
-        setInterlocutor(user);
+    PrivateChatServices.getPrivateChatByIdFromDB(chatId)
+      .then((chat: PrivateChatEntity) => {
+        setCurrentChat(chat);
+        const interlocutor = chat?.interlocutors
+          .find((interlocutor) => interlocutor.uid !== currentUserUid);
+        UserServices.getUserFromDBByUid(interlocutor?.uid || '')
+          .then((user: UserEntity) => {
+            setInterlocutorName(user.email);
+            setIsLoading(false);
+          })
       })
-      .catch((error: Error) => {
+      .catch((error) => {
         socket.emit(SocketEvents.Error, error);
-      })
-      .finally(() => {
         setIsLoading(false);
-      });
-  }, [userId]);
-
-  if (isLoading) {
-    return <Loader />;
-  }
+      })
+  }, [chatId, currentUserUid]);
 
   return (
     <ChatPageContainer>
-      {interlocutor && (
         <>
           <ChatNavBar
-            title={`Chat with ${interlocutor.email}`}
+            title={`Chat with ${interlocutorName}`}
             showBackButton
             backTo={MainRoutes.ChatOverviewRoute_2}
           />
-          <ChatMessages type="private" />
+          {!isLoading
+            ? (
+              <ChatMessages
+                type="private"
+              />
+            )
+            : (
+              <Loader />
+            )}
           <ChatInputContainer />
         </>
-      )}
     </ChatPageContainer>
   );
 };

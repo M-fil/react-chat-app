@@ -4,7 +4,7 @@ export interface UserEntity {
   email: string,
   avatar: string,
   uid: string,
-  chats: UserEntity[],
+  chats: string[],
 }
 
 export interface State {

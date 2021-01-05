@@ -44,14 +44,6 @@ export const createNewConversationInDB = (
   };
 }
 
-export const addMessageToConversationFromDB = (
-  conversationId: string, message: MessageEntity,
-) => {
-  return firebaseServices.rdb
-    .ref(`${DBCollections.Messages}/${conversationId}`)
-    .push(message)
-};
-
 export const getConversationsOfCurrentUser = (userId: string) => {
   return firebaseServices.rdb
     .ref(`${DBCollections.Conversations}/${userId}`)
@@ -62,13 +54,13 @@ export const getConversationsOfCurrentUser = (userId: string) => {
     });
 };
 
-export const getMessagesOfConversation = (
-  userId: string, conversationId: string,
-) => {
-  return getLinkOnConversation(userId, ['messages'], conversationId).link
+export const getMessagesOfConversation = (conversationId: string) => {
+  return firebaseServices.rdb
+    .ref(`${DBCollections.Messages}/${conversationId}`)
     .get()
     .then((snapshot) => {
       const data = snapshot.val();
+      console.log('data', data);
       return data;
     });
 }

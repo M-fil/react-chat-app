@@ -4,11 +4,13 @@ import { useSelector } from 'react-redux';
 
 import * as ChatServices from '../../../../core/services/chats';
 import * as ConversationServices from '../../../../core/services/conversation';
+import * as PrivateChatServices from '../../../../core/services/private-chats';
 import { selectCurrentUser } from '../../../../core/selectors/auth';
 import { selectChats } from '../../../../core/selectors/chats';
 import { UserEntity } from '../../../../core/redux/reducers/auth';
 import { socket } from '../../../../App';
 import { SocketEvents } from '../../../../core/constants/events';
+import { InterlocutorEntity } from '../../../../core/interfaces/chat';
 
 const { Option } = AutoComplete;
 export type SelectListItemType = 'conversations' | 'private_messages';
@@ -36,13 +38,30 @@ const ChatListController: React.FC<ChatListContainerProps> = ({ users }) => {
   }, [currentUser]);
 
   const onCreateNewChat = useCallback(() => {
-    const isChatExists = chats.some((chat) => chat.email === selectedUserEmail);
     const selectedUser = users.find((user) => user.email === selectedUserEmail);
+    const isChatExists = chats.some((chatId) => selectedUser?.chats.includes(chatId));
 
     if (!isChatExists && selectedUser) {
-      const newChats = [...chats, selectedUser];
-      ChatServices.updateChatsOfUser(currentUser.uid, newChats);
+      const interlocutors: InterlocutorEntity[] = [
+        {
+          uid: currentUser.uid,
+          email: currentUser.email,
+          avatar: currentUser.avatar,
+        },
+        {
+          uid: selectedUser.uid,
+          email: selectedUser.email,
+          avatar: selectedUser.avatar,
+        }
+      ];
+      const { chatId } = PrivateChatServices.createPrivateChatInDB(interlocutors);
+      const newChats = [...chats, chatId];
+      interlocutors.forEach((interlocutor) => {
+        ChatServices.updateChatsOfUser(interlocutor.uid, newChats);
+      });
+
       message.success(`The chat with ${selectedUser.email} was created!`);
+      socket.emit(SocketEvents.CreateChat, selectedUser.uid);
     } else {
       message.error(`The chat with ${selectedUser?.email || ''} is already exists`);
     }

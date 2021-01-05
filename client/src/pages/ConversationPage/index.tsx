@@ -1,6 +1,6 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 
 import ChatNavBar from '../../core/components/Chat/ChatNavBar';
 import ChatPageContainer from '../ChatOverviewPage/styled';
@@ -13,18 +13,28 @@ import { ChatPageParams } from '../../core/interfaces/routes';
 import { selectUserUid } from '../../core/selectors/auth';
 import { socket } from '../../App';
 import { SocketEvents } from '../../core/constants/events';
+import { ConversationEntity } from '../../core/interfaces/conversation';
+import { setCurrentChatIdAction } from '../../core/redux/actions/chat';
 
 const ConversationPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [conversation, setConversation] = useState<ConversationEntity | null>(null);
   const params: ChatPageParams = useParams();
   const conversationId = useMemo(() => params.conversationId, [params.conversationId]);
   const currentUserUid = useSelector(selectUserUid);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (conversation) {
+      dispatch(setCurrentChatIdAction(conversation.id));
+    }
+  }, [conversation, dispatch]);
 
   useEffect(() => {
     setIsLoading(true);
     ConversationServices.getConversationsOfCurrentUserById(currentUserUid, conversationId)
       .then((conversation) => {
-        console.log('conversation', conversation);
+        setConversation(conversation);
       })
       .catch((err) => {
         socket.emit(SocketEvents.Error, err);
@@ -45,7 +55,13 @@ const ConversationPage: React.FC = () => {
         showBackButton
         backTo={MainRoutes.ChatOverviewRoute_2}
       />
-      <ChatMessages type="group" />
+      {isLoading
+        ? (
+          <Loader />
+        )
+        : (
+          <ChatMessages type="group" />
+        )}
       <ChatInputContainer />
     </ChatPageContainer>
   );

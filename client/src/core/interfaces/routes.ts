@@ -1,4 +1,4 @@
 export interface ChatPageParams {
-  userId: string,
+  chatId: string,
   conversationId: string,
 }

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import shortid from 'shortid';
 import { useSelector } from 'react-redux';
 
-import * as ConversationServices from '../services/conversation';
+import * as ChatServices from '../services/chats';
 import { SocketEvents } from '../constants/events';
 import { MessageEntity } from '../interfaces/chat';
 import { socket } from '../../App';
@@ -19,11 +19,11 @@ export const useConversationCreate = () => {
                 createdAt: new Date(Date.now()),
                 isNotification: true,
             };
-            ConversationServices.addMessageToConversationFromDB(conversationId, message);
+            ChatServices.createNewMessageForChat(conversationId, message);
         });
 
         return () => {
             socket.off(SocketEvents.AdminJoinToConversation);
         };
-    }, []);
+    }, [currentUserEmail]);
 };

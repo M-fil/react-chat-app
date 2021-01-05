@@ -3,7 +3,7 @@ import { createSelector } from 'reselect';
 import { AppState } from '../redux/reducers';
 import { State, UserEntity } from '../redux/reducers/auth';
 
-const selectAuthState = (state: AppState): State => state.auth;
+export const selectAuthState = (state: AppState): State => state.auth;
 
 export const selectAuthIsLoading = createSelector(
   selectAuthState,
@@ -22,7 +22,7 @@ export const selectUserEmail = createSelector(
 
 export const selectUserChats = createSelector(
   selectAuthState,
-  (state: State): UserEntity[] => state.user.chats || [],
+  (state: State): string[] => state.user.chats || [],
 );
 
 export const selectUserUid = createSelector(

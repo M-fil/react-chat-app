@@ -1,28 +1,28 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 
 import ChatMessagesContainer from './styled';
 import { socket } from '../../../../App';
 import { MessageEntity } from '../../../interfaces/chat';
 import { SocketEvents } from '../../../constants/events';
 import * as ChatServices from '../../../services/chats';
-import * as ConversationServices from '../../../services/conversation';
-import { selectUserUid, selectUserEmail, selectUserAvatar } from '../../../selectors/auth';
+import { selectUserUid } from '../../../selectors/auth';
+import { selectCurrentMessages, selectCurrentChatId } from '../../../selectors/chats';
+import { updateCurrentMessagesAction } from '../../../redux/actions/chat';
 
 export type MessagesType = 'group' | 'private';
 
 interface ChatMessagesProps {
   type: MessagesType,
-  conversationId?: string,
 }
 
-const ChatMessages: React.FC<ChatMessagesProps> = ({ type, conversationId = '' }) => {
-  const [messages, setMessages] = useState<MessageEntity[]>([]);
+const ChatMessages: React.FC<ChatMessagesProps> = ({ type }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const currentUserUid = useSelector(selectUserUid);
-  const currentUserEmail = useSelector(selectUserEmail);
-  const currentUserAvatar = useSelector(selectUserAvatar);
+  const currentChatId = useSelector(selectCurrentChatId);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
+  const currentMessages = useSelector(selectCurrentMessages);
+  const dispatch = useDispatch();
 
   const scrollToTheLastMessage = useCallback(() => {
     const messagesContainer = messagesContainerRef.current;
@@ -33,26 +33,22 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ type, conversationId = '' }
   }, []);
 
   useEffect(() => {
-    if (type === 'private') {
-      socket.on(SocketEvents.ReceiveMessage, (message: MessageEntity) => {
-        setMessages((prevMessages) => ([...prevMessages, message]));
+    socket.on(SocketEvents.ReceiveMessage, (message: MessageEntity, isChannel: boolean) => {
+      const newMessages = [...currentMessages, message];
+      dispatch(updateCurrentMessagesAction(newMessages));
+      if (isChannel && currentChatId) {
+        ChatServices.createNewMessageForChat(currentChatId, message);
+      } else {
         ChatServices.createNewMessageForChat(currentUserUid, message);
-        if (message.from?.uid === currentUserUid) {
-          scrollToTheLastMessage();
-        }
-      });
-    }
-  }, [currentUserUid, scrollToTheLastMessage, type]);
+      }
+    });
+  }, [currentUserUid, type, currentChatId, currentMessages, dispatch]);
 
   useEffect(() => {
     setIsLoading(true);
-    const getData = type === 'private'
-      ? ChatServices.getAllMessagesFromChat(currentUserUid)
-      : ConversationServices.getMessagesOfConversation(currentUserUid, conversationId);
-
-    getData
+    ChatServices.getAllMessagesFromChat(currentChatId)
       .then((messages) => {
-        setMessages(messages ? Object.values(messages) : []);
+        dispatch(updateCurrentMessagesAction(messages ? Object.values(messages) : []))
         setIsLoading(false);
         scrollToTheLastMessage();
       })
@@ -60,7 +56,15 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ type, conversationId = '' }
         setIsLoading(false);
         socket.emit(SocketEvents.Error, error);
       });
-  }, [currentUserUid, scrollToTheLastMessage, conversationId, type]);
+  }, [currentUserUid, scrollToTheLastMessage, currentChatId, type, dispatch]);
+
+  useEffect(() => {
+    const lastMessage = currentMessages[currentMessages.length - 1];
+
+    if (lastMessage && lastMessage.from?.uid === currentUserUid) {
+      scrollToTheLastMessage();
+    }
+  }, [currentMessages, currentUserUid, scrollToTheLastMessage]);
 
   return (
     <ChatMessagesContainer ref={messagesContainerRef}>
@@ -71,7 +75,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ type, conversationId = '' }
           </h3>
         ) : (
           <div className="messages-wrapper">
-            {messages.map((message) => {
+            {currentMessages.map((message) => {
               const isCurrentUser = message.from?.uid !== currentUserUid;
 
               if (message.isNotification) {

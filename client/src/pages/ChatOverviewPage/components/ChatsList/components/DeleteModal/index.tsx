@@ -2,14 +2,11 @@ import React, { useCallback } from 'react';
 import { message, Modal } from 'antd';
 import { useSelector, useDispatch } from 'react-redux';
 
-import { SearchUserOption } from '../../index';
 import * as ChatServices from '../../../../../../core/services/chats';
 import * as ConversationServices from '../../../../../../core/services/conversation';
 import { selectChats, selectConversations } from '../../../../../../core/selectors/chats';
 import { selectUserUid } from '../../../../../../core/selectors/auth';
 import { updateCurrentUserChatsAction, updateCurrentUserConversationsAction } from '../../../../../../core/redux/actions/chat';
-import { MessagesType } from '../../../../../../core/components/Chat/ChatMessages';
-import { ConversationEntity } from '../../../../../../core/interfaces/conversation';
 
 interface DeleteModalProps {
   title?:string,
@@ -41,20 +38,19 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
   }, [setIsVisible]);
 
   const onConfirmDeletion = useCallback(() => {
-    const targetChatToDelete = chats.find((chat) => chat.uid === targetIdToDelete);
     const targetConversationToDelete = conversations.find((conversation) => conversation.id === targetIdToDelete);
+    const targetChatToDelete = chats.find((chatId) => chatId === targetConversationToDelete?.id);
 
     if (targetChatToDelete) {
-      const updatedChats = chats.filter((chat) => chat.uid === targetIdToDelete)
-      const { email } = targetChatToDelete;
+      const updatedChats = chats.filter((chatId) => chatId !== targetConversationToDelete?.id)
       ChatServices
         .updateChatsOfUser(currentUserUid, updatedChats)
         .then(() => {
-          message.success(`The chat with ${email} was successfully deleted`);
+          message.success('The chat was successfully deleted');
           dispatch(updateCurrentUserChatsAction(updatedChats));
         })
         .catch(() => {
-          message.error(`The error occurred while deleting the chat with ${email}`);
+          message.error('The error occurred while deleting the chat with');
         })
         .finally(() => {
           setIsVisible(false);

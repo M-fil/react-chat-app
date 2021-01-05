@@ -6,17 +6,22 @@ import { DeleteOutlined } from '@ant-design/icons';
 
 import ChatListContainer from './styled';
 import * as UserServices from '../../../../core/services/users';
-import * as ChatServices from '../../../../core/services/chats';
+import * as PrivateChatServices from '../../../../core/services/private-chats';
 import * as ConversationServices from '../../../../core/services/conversation';
 import { selectCurrentUser } from '../../../../core/selectors/auth';
-import { selectChats, selectConversations } from '../../../../core/selectors/chats';
-import { updateCurrentUserChatsAction, updateCurrentUserConversationsAction } from '../../../../core/redux/actions/chat';
+import {
+  selectConversations, selectCurrentChatId,
+  selectPrivateChatsWithCurrentUser,
+} from '../../../../core/selectors/chats';
+import {
+  updateCurrentUserChatsAction,
+  updateCurrentUserConversationsAction,
+  updateCurrentUserPrivateChats,
+} from '../../../../core/redux/actions/chat';
 import { UserEntity } from '../../../../core/redux/reducers/auth';
 import DeleteModal from './components/DeleteModal';
 import { MainRoutes } from '../../../../core/constants/routes/main-routes';
 import { socket } from '../../../../App';
-import { SocketEvents } from '../../../../core/constants/events';
-import { ConversationEntity } from '../../../../core/interfaces/conversation';
 import ChatListController from '../ChatListController';
 import { MessagesType } from '../../../../core/components/Chat/ChatMessages';
 
@@ -30,9 +35,24 @@ const ChatList: React.FC = () => {
   const [targetIdToDelete, setTargetIdToDelete] = useState<string>('');
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState<boolean>(false);
   const currentUser = useSelector(selectCurrentUser);
-  const chats = useSelector(selectChats);
   const conversations = useSelector(selectConversations);
+  const privateChatsWithCurrentUser = useSelector(selectPrivateChatsWithCurrentUser);
+  const currentChatId = useSelector(selectCurrentChatId);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const getChat = PrivateChatServices.getLinkOnPrivateChatInDB('');
+    getChat
+      .on('value', (snapshot) => {
+        const data = snapshot.val();
+        let filteredChats = currentUser.chats.map((chatId) => data[chatId]).filter((chat) => chat);
+        dispatch(updateCurrentUserPrivateChats(filteredChats));
+      });
+
+    return () => {
+      getChat.off('value');
+    };
+  }, [currentChatId, dispatch, currentUser.chats]);
 
   useEffect(() => {
     const getLinkOnUser = UserServices.getLinkOnUserByUid(currentUser.uid);
@@ -104,24 +124,28 @@ const ChatList: React.FC = () => {
         users={users}
       />
       <div className="chat-list__items" onClick={onChatDeleteClickHandle}>
-        {(chats).map((chat) => (
-          <div data-user-chat-uid={chat.uid} key={chat.uid}>
-            <Link
-              to={`${MainRoutes.ChatOverviewRoute_2}/${chat.uid}`}
-              key={chat.uid}
-              replace={false}
-            >
-              {chat.email}
-            </Link>
-            <Button
-              type="primary"
-              className="delete-chat-button"
-              data-delete-chat-button="private"
-            >
-              <DeleteOutlined />
-            </Button>
-          </div>
-        ))}
+        {(privateChatsWithCurrentUser).map((chat) => {
+          const chatId =chat.id;
+
+          return (
+            <div data-user-chat-uid={chatId} key={chatId}>
+              <Link
+                to={`${MainRoutes.ChatOverviewRoute_2}/${chatId}`}
+                key={chatId}
+                replace={false}
+              >
+                {chat.user?.email}
+              </Link>
+              <Button
+                type="primary"
+                className="delete-chat-button"
+                data-delete-chat-button="private"
+              >
+                <DeleteOutlined />
+              </Button>
+            </div>
+          );
+        })}
         {conversations.map((conversation) => (
           <div data-user-chat-uid={conversation.id} key={conversation.id}>
             <Link

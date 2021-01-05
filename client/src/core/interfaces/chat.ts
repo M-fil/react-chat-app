@@ -1,3 +1,14 @@
+export interface InterlocutorEntity {
+  uid: string,
+  email: string,
+  avatar: string,
+}
+
+export interface PrivateChatEntity {
+  interlocutors: InterlocutorEntity[],
+  id: string,
+}
+
 export interface FromUserEntity {
   email: string,
   avatar: string,

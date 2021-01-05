@@ -13,21 +13,25 @@ const PORT = 3030 || process.env.PORT;
 io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log('You were disconnected by the socket.io...');
-    setTimeout(() => {
-      socket.connect();
-    }, 1000);
   });
 
-  socket.on('sendMessage', (message) => {
-    console.log('message', message);
-    io.sockets.emit('message', message);
+  socket.on('sendMessage', (receiverId, message, isChannel) => {
+    console.log('receiverId', receiverId)
+    socket.to(receiverId).emit('message', message, isChannel);
+  });
+
+  socket.on('chatCreate', (userId) => {
+    const isIdExists = socket.rooms.has(userId);
+    if (!isIdExists) {
+      console.log('chatCreate', userId)
+      socket.join(userId);
+    }
   });
 
   socket.on('conversationCreate', (conversationId) => {
     console.log('conversationId', conversationId)
     socket.join(conversationId);
-    io.sockets.emit('adminJoin', conversationId);
-    // io.in(conversationId).emit('adminJoin', conversationId);
+    io.emit('adminJoin', conversationId);
   });
 
   socket.on('error', (error) => {
@@ -37,9 +41,6 @@ io.on('connection', (socket) => {
   socket.on('connect_error', (err) => {
     console.log(err.message);
     socket.offAny();
-    setTimeout(() => {
-      socket.connect();
-    }, 1000);
   });
 });
 

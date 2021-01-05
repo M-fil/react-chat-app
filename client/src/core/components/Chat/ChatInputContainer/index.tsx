@@ -1,45 +1,60 @@
 import React, { useCallback, useRef } from 'react';
 import { Form, Input, Button } from 'antd';
 import { SendOutlined } from '@ant-design/icons';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import shortid from 'shortid';
 
 import { SocketEvents } from '../../../constants/events';
 import { socket } from '../../../../App';
 import { MessageEntity } from '../../../interfaces/chat';
-import { selectUserEmail, selectUserAvatar, selectUserUid } from '../../../selectors/auth';
+import { selectCurrentUser } from '../../../selectors/auth';
 import ChatInputWrapper from './styled';
 import * as ChatServices from '../../../services/chats';
+import { updateCurrentMessagesAction } from '../../../redux/actions/chat';
+import {
+  selectCurrentMessages, selectCurrentChatId, selectInterlocutorId,
+} from '../../../selectors/chats';
 
 interface MessageFormValues {
   message: string;
 }
 
-const ChatInputContainer: React.FC = () => {
-  const currentUserEmail = useSelector(selectUserEmail);
-  const currentUserAvatar = useSelector(selectUserAvatar);
-  const currentUserUid = useSelector(selectUserUid);
+interface ChatInputContainerProps {
+  isChannel?: boolean,
+}
+
+const ChatInputContainer: React.FC<ChatInputContainerProps> = ({ isChannel }) => {
+  const currentUser = useSelector(selectCurrentUser);
+  const chatId = useSelector(selectCurrentChatId);
+  const interlocutorId = useSelector(selectInterlocutorId);
   const [form] = Form.useForm();
   const messageInputRef = useRef<Input | null>(null);
+  const dispatch = useDispatch();
+  const currentMessages = useSelector(selectCurrentMessages);
 
   const onMessageSubmit = useCallback((values: MessageFormValues) => {
     const message: MessageEntity = {
       id: shortid.generate(),
       text: values.message,
       from: {
-        email: currentUserEmail,
-        avatar: currentUserAvatar,
-        uid: currentUserUid,
+        email: currentUser.email,
+        avatar: currentUser.avatar,
+        uid: currentUser.uid,
       },
       createdAt: new Date(Date.now()),
     };
-    ChatServices.createNewMessageForChat(currentUserUid, message);
-    socket.emit(SocketEvents.SendMessage, message);
+    dispatch(updateCurrentMessagesAction([...currentMessages, message]));
+    if (isChannel && chatId) {
+      ChatServices.createNewMessageForChat(chatId, message);
+    } else {
+      ChatServices.createNewMessageForChat(chatId, message);
+    }
+    socket.emit(SocketEvents.SendMessage, interlocutorId, message, isChannel);
     form.resetFields();
     if (messageInputRef.current) {
       messageInputRef.current.focus();
     }
-  }, [currentUserAvatar, currentUserEmail, currentUserUid, form]);
+  }, [currentUser, form, chatId, isChannel, dispatch, currentMessages, interlocutorId]);
 
   return (
     <ChatInputWrapper>

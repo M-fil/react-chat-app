@@ -1,27 +1,26 @@
 import { firebaseServices } from '../firebase';
 import { DBCollections } from '../constants/db';
-import { UserEntity } from '../redux/reducers/auth';
 import { MessageEntity } from '../interfaces/chat';
 
-export const updateChatsOfUser = (userId: string, newChats: UserEntity[]) => {
+export const updateChatsOfUser = (userId: string, newChats: string[]) => {
   return firebaseServices.rdb
     .ref(`${DBCollections.Users}/${userId}`)
     .update({ chats: newChats });
 }
 
-export const createNewMessageForChat = (userId: string, message: MessageEntity) => {
+export const createNewMessageForChat = (chatId: string, message: MessageEntity) => {
   return firebaseServices.rdb
-    .ref(`${DBCollections.Messages}/${userId}`)
+    .ref(`${DBCollections.Messages}/${chatId}`)
     .push(message)
 };
 
-export const getRefOnChatMessages = (userId: string) => {
+export const getRefOnChatMessages = (chatId: string) => {
   return firebaseServices.rdb
-    .ref(`${DBCollections.Messages}/${userId}`)
+    .ref(`${DBCollections.Messages}/${chatId}`)
 };
 
-export const getAllMessagesFromChat = (userId: string) => {
-  return getRefOnChatMessages(userId)
+export const getAllMessagesFromChat = (chatId: string) => {
+  return getRefOnChatMessages(chatId)
     .get()
     .then((snapshot) => {
       const data = snapshot.val();
