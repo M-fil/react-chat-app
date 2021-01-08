@@ -33,14 +33,9 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ type }) => {
   }, []);
 
   useEffect(() => {
-    socket.on(SocketEvents.ReceiveMessage, (message: MessageEntity, isChannel: boolean) => {
+    socket.on(SocketEvents.ReceiveMessage, (message: MessageEntity) => {
       const newMessages = [...currentMessages, message];
       dispatch(updateCurrentMessagesAction(newMessages));
-      if (isChannel && currentChatId) {
-        ChatServices.createNewMessageForChat(currentChatId, message);
-      } else {
-        ChatServices.createNewMessageForChat(currentUserUid, message);
-      }
     });
   }, [currentUserUid, type, currentChatId, currentMessages, dispatch]);
 

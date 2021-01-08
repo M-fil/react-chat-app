@@ -7,10 +7,11 @@ import * as ConversationServices from '../../../../core/services/conversation';
 import * as PrivateChatServices from '../../../../core/services/private-chats';
 import { selectCurrentUser } from '../../../../core/selectors/auth';
 import { selectChats } from '../../../../core/selectors/chats';
-import { UserEntity } from '../../../../core/redux/reducers/auth';
+import { UserEntity } from '../../../../core/interfaces/user';
 import { socket } from '../../../../App';
 import { SocketEvents } from '../../../../core/constants/events';
 import { InterlocutorEntity } from '../../../../core/interfaces/chat';
+import AutocompleteInput from '../../../../core/components/AutocompleteInput';
 
 const { Option } = AutoComplete;
 export type SelectListItemType = 'conversations' | 'private_messages';
@@ -24,22 +25,24 @@ const ChatListController: React.FC<ChatListContainerProps> = ({ users }) => {
   const currentUser = useSelector(selectCurrentUser);
   const chats = useSelector(selectChats);
 
-  const onSearchUser = useCallback((value: string, option) => {
-    return option.value.indexOf(value) !== -1;
-  }, []);
-
   const onUserValueChange = useCallback((value: string) => {
     setSelectedUserEmail(value);
   }, [setSelectedUserEmail]);
 
   const onCreateNewConversation = useCallback(() => {
-    const { conversationId } = ConversationServices.createNewConversationInDB(currentUser, 'Conversation');
+    const adminInterlocutor: InterlocutorEntity = {
+      uid: currentUser.uid,
+      email: currentUser.email,
+      avatar: currentUser.avatar,
+    };
+    const { conversationId } = ConversationServices.createNewConversationInDB(adminInterlocutor, 'Conversation');
     socket.emit(SocketEvents.CreateConversation, conversationId);
+    ChatServices.addNotificationMessageInDB(conversationId, `${currentUser.email} created this chat`);
   }, [currentUser]);
 
   const onCreateNewChat = useCallback(() => {
     const selectedUser = users.find((user) => user.email === selectedUserEmail);
-    const isChatExists = chats.some((chatId) => selectedUser?.chats.includes(chatId));
+    const isChatExists = chats.some((chatId) => (selectedUser?.chats || []).includes(chatId));
 
     if (!isChatExists && selectedUser) {
       const interlocutors: InterlocutorEntity[] = [
@@ -67,28 +70,31 @@ const ChatListController: React.FC<ChatListContainerProps> = ({ users }) => {
     }
 
     setSelectedUserEmail('');
-  }, [chats, users, selectedUserEmail, currentUser.uid]);
+  }, [chats, users, selectedUserEmail, currentUser.uid, currentUser.email, currentUser.avatar]);
 
   const onSelectItemsChangeHandle = useCallback((type: SelectListItemType) => () => {
     
   }, []);
 
+  const renderAutoCompleteValue = useCallback((value: UserEntity) => (
+    <Option key={value.uid} value={value.email}>
+      {value.email}
+    </Option>
+  ), []);
+
+  const renderAutoCompleteOption = useCallback((value: UserEntity) => ({
+    value: value.email,
+  }), []);
+
   return (
     <header>
-      <AutoComplete
-        filterOption={onSearchUser}
-        onChange={onUserValueChange}
-        value={selectedUserEmail}
-        options={users.map((user) => ({ value: user.email }))}
-        placeholder="Choose the user for communication"
-        style={{ width: 200 }}
-      >
-        {users.map((user) => (
-          <Option key={user.uid} value={user.email}>
-            {user.email}
-          </Option>
-        ))}
-      </AutoComplete>
+      <AutocompleteInput<UserEntity, string>
+        selectedValue={selectedUserEmail}
+        values={users}
+        renderValue={renderAutoCompleteValue}
+        renderOption={renderAutoCompleteOption}
+        onValueChange={onUserValueChange}
+      />
       <Button
         onClick={onCreateNewChat}
         htmlType="button"

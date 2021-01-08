@@ -65,3 +65,15 @@ export const selectInterlocutorId = createSelector(
     return '';
   }
 );
+
+export const selectUsersFromCurrentChats = createSelector(
+  selectPrivateChats,
+  selectUserUid,
+  (
+    privateChats: PrivateChatEntity[], userUid: string,
+  ): string[] => privateChats
+    .map((chat) => {
+      const interlocutor = chat.interlocutors.find((interlocutor) => interlocutor.uid !== userUid);
+      return interlocutor?.uid || '';
+    })
+);

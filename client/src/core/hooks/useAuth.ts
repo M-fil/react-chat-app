@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { firebaseServices } from '../firebase';
 import { loginSuccessAction, logOutAction } from '../redux/actions/auth';
 import { updateCurrentUserChatsAction } from '../redux/actions/chat';
-import { UserEntity } from '../redux/reducers/auth';
+import { UserEntity } from '../interfaces/user';
 import * as UserServices from '../services/users';
 
 const useAuth = () => {
@@ -29,8 +29,9 @@ const useAuth = () => {
               avatar: userFromDb.avatar,
               uid,
               chats: userFromDb.chats,
+              conversations: userFromDb.conversations,
             }
-            dispatch(updateCurrentUserChatsAction(userFromDb.chats));
+            dispatch(updateCurrentUserChatsAction(userFromDb?.chats || []));
             dispatch(loginSuccessAction(authedUser));
             setIsLoading(false);
           })

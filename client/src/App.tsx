@@ -26,7 +26,6 @@ const App: React.FC = () => {
   useEffect(() => {
     socket.on(SocketEvents.Error, (error: Error) => {
       history.push(MainRoutes.ErrorPage);
-      console.log(error.message);
     })
   }, [history]);
 

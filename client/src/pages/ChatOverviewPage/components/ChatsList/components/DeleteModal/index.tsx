@@ -58,7 +58,7 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
     } else if (targetConversationToDelete) {
       const updatesConversations = conversations.filter((conversation) => conversation.id !== targetIdToDelete);
       const { name } = targetConversationToDelete;
-      ConversationServices.removeConversationFromDB(currentUserUid, targetIdToDelete)
+      ConversationServices.removeConversationFromDB(targetIdToDelete)
         .then(() => {
           message.success(`Conversation '${name}' was deleted.`);
           dispatch(updateCurrentUserConversationsAction(updatesConversations));

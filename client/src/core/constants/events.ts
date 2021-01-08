@@ -7,4 +7,7 @@ export enum SocketEvents {
   CreateConversation = 'conversationCreate',
   CreateChat = 'chatCreate',
   AdminJoinToConversation = 'adminJoin',
+  JoinPrivateChat = 'joinPrivateChat',
+  JoinConversation = 'joinConversation',
+  LeaveChat = 'leaveChat',
 }

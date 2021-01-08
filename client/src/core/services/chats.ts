@@ -1,6 +1,10 @@
+import shortid from 'shortid';
+
 import { firebaseServices } from '../firebase';
 import { DBCollections } from '../constants/db';
 import { MessageEntity } from '../interfaces/chat';
+import { socket } from '../../App';
+import { SocketEvents } from '../constants/events';
 
 export const updateChatsOfUser = (userId: string, newChats: string[]) => {
   return firebaseServices.rdb
@@ -28,3 +32,12 @@ export const getAllMessagesFromChat = (chatId: string) => {
     });
 }
 
+export const addNotificationMessageInDB = (conversationId: string, text: string) => {
+  const message: MessageEntity = {
+    id: shortid.generate(),
+    text,
+    createdAt: new Date(Date.now()),
+    isNotification: true,
+  };
+  socket.emit(SocketEvents.SendMessage, conversationId, message, true);
+};

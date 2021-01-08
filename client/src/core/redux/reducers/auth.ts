@@ -1,11 +1,5 @@
 import { AuthAction, AuthActionTypes } from '../action-types/auth';
-
-export interface UserEntity {
-  email: string,
-  avatar: string,
-  uid: string,
-  chats: string[],
-}
+import { UserEntity } from '../../interfaces/user';
 
 export interface State {
   isLoading: boolean,
@@ -21,6 +15,7 @@ const initialState: State = {
     avatar: '',
     uid: '',
     chats: [],
+    conversations: [],
   },
 };
 

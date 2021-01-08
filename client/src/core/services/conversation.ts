@@ -2,23 +2,23 @@ import shortid from 'shortid';
 
 import { DBCollections } from '../constants/db';
 import { firebaseServices } from '../firebase';
-import { MessageEntity, FromUserEntity } from '../interfaces/chat';
+import { InterlocutorEntity } from '../interfaces/chat';
 import { ConversationEntity } from '../interfaces/conversation';
 import { socket } from '../../App';
 import { SocketEvents } from '../constants/events';
 
 export const getLinkOnConversation = (
-  userId: string, extraPath: string[] = [], id: string = shortid.generate(),
+  extraPath: string[] = [], id: string = shortid.generate(),
 ) => {
   const dividedPath = extraPath.join('/');
   const link = firebaseServices.rdb
-    .ref(`${DBCollections.Conversations}/${userId}/${id}/${dividedPath}`);
+    .ref(`${DBCollections.Conversations}/${id}/${dividedPath}`);
   
   return { link, id };
 }
 
-export const getConversationsOfCurrentUserById = (userId: string, conversationId: string) => {
-  return getLinkOnConversation(userId, [], conversationId).link
+export const getConversationsOfCurrentUserById = (conversationId: string) => {
+  return getLinkOnConversation([], conversationId).link
     .get()
     .then((snapshot) => {
       const data = snapshot.val();
@@ -26,31 +26,49 @@ export const getConversationsOfCurrentUserById = (userId: string, conversationId
     })
 }
 
+export const addConversationIdToUser = (userId: string, conversationId: string) => {
+  return firebaseServices.rdb
+    .ref(`${DBCollections.Users}/${userId}/conversations`)
+    .push(conversationId);
+}
+
 export const createNewConversationInDB = (
-  user: FromUserEntity, conversationName: string,
+  user: InterlocutorEntity, conversationName: string,
 ) => {
-  const { link, id } = getLinkOnConversation(user.uid);
+  const { link, id } = getLinkOnConversation();
   const initialConversation: ConversationEntity = {
     id,
     name: conversationName,
     admin: user,
-    messages: [],
+    interlocutors: [user],
   };
+
+  const callback = link.set(initialConversation)
+    .then(() => {
+      addConversationIdToUser(user.uid, id);
+    });
   socket.emit(SocketEvents.CreateConversation, id);
 
   return {
-    callback: link.set(initialConversation),
+    callback,
     conversationId: id,
   };
 }
 
-export const getConversationsOfCurrentUser = (userId: string) => {
+export const getConversationsOfCurrentUser = (userConversations: string[]) => {
   return firebaseServices.rdb
-    .ref(`${DBCollections.Conversations}/${userId}`)
+    .ref(`${DBCollections.Conversations}`)
     .get()
     .then((snapshot) => {
       const data = snapshot.val();
-      return data;
+      const result: { [prop: string]: ConversationEntity } = {};
+      userConversations.forEach((conversationId) => {
+        if (conversationId) {
+          result[conversationId] = data[conversationId];
+        }
+      });
+
+      return result;
     });
 };
 
@@ -60,12 +78,17 @@ export const getMessagesOfConversation = (conversationId: string) => {
     .get()
     .then((snapshot) => {
       const data = snapshot.val();
-      console.log('data', data);
       return data;
     });
 }
 
-export const removeConversationFromDB = (userId: string, conversationId: string) => {
-  return getLinkOnConversation(userId, [], conversationId).link
-    .remove();
+export const removeConversationFromDB = (conversationId: string) => {
+  return getLinkOnConversation([], conversationId).link.remove();
+};
+
+export const updateInterlocutorsInConversation = (
+  conversationId: string, newInterlocutorIds: InterlocutorEntity[],
+) => {
+  return getLinkOnConversation(['interlocutors'], conversationId).link
+    .set(newInterlocutorIds)
 };

@@ -1,5 +1,7 @@
+require('./firebase');
 const http = require('http');
 const socketio = require('socket.io');
+const { createMessageInDB } = require('./services/chat');
 
 const server = http.createServer();
 const io = socketio(server, {
@@ -15,23 +17,44 @@ io.on('connection', (socket) => {
     console.log('You were disconnected by the socket.io...');
   });
 
-  socket.on('sendMessage', (receiverId, message, isChannel) => {
-    console.log('receiverId', receiverId)
-    socket.to(receiverId).emit('message', message, isChannel);
+  socket.on('message', (message, receiverId) => {
+    createMessageInDB(receiverId,  message);
   });
+
+  socket.on('sendMessage', (receiverId, message, isForAllClient) => {
+    console.log('receiverId', receiverId)
+    if (isForAllClient) {
+      io.to(receiverId).emit('message', message, receiverId);
+    } else {
+      socket.to(receiverId).emit('message', message, receiverId);
+    }
+
+    createMessageInDB(receiverId,  message);
+  });
+
+  socket.on('joinPrivateChat', (chatId) => {
+    socket.join(chatId);
+  });
+
+  socket.on('joinConversation', (conversationId) => {
+    socket.join(conversationId);
+  });
+
+  socket.on('leaveChat', (chatId) => {
+    console.log('LEAVE CHAT', chatId);
+    socket.leave(chatId);
+  })
 
   socket.on('chatCreate', (userId) => {
     const isIdExists = socket.rooms.has(userId);
     if (!isIdExists) {
-      console.log('chatCreate', userId)
       socket.join(userId);
     }
   });
 
   socket.on('conversationCreate', (conversationId) => {
-    console.log('conversationId', conversationId)
+    console.log('conversationId', conversationId);
     socket.join(conversationId);
-    io.emit('adminJoin', conversationId);
   });
 
   socket.on('error', (error) => {

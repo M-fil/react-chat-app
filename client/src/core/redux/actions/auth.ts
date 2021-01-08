@@ -1,5 +1,5 @@
 import { AuthAction, AuthActionTypes } from '../action-types/auth';
-import { UserEntity } from '../reducers/auth';
+import { UserEntity } from '../../interfaces/user';
 
 export const loginInitAction = (): AuthAction => ({
   type: AuthActionTypes.LoginInit,

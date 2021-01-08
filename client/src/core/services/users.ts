@@ -1,6 +1,6 @@
 import { firebaseServices } from '../firebase';
 import { DBCollections } from '../constants/db';
-import { UserEntity } from '../redux/reducers/auth';
+import { UserEntity } from '../interfaces/user';
 
 export const createNewUserInDB = (user: UserEntity) => {
   if (user.uid) {
@@ -38,4 +38,21 @@ export const getUserFromDBByUid = (uid: string): Promise<UserEntity> => {
       const data = snapshot.val();
       return data;
     });
+}
+
+export const getAllUsersForAutoComplete = (
+  currentUserId: string, usersFromCurrentChats: string[],
+) => {
+  return getAllUsersFromDB()
+    .then((usersFromDb: { [prop: string]: UserEntity }) => {
+      if (usersFromDb) {
+        return Object
+          .values(usersFromDb)
+          .filter((user) => {
+            return user.uid !== currentUserId && !usersFromCurrentChats.includes(user.uid);
+          });
+      }
+
+      return [];
+    })
 }

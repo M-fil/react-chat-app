@@ -8,7 +8,7 @@ import ChatMessages from '../../core/components/Chat/ChatMessages';
 import ChatInputContainer from '../../core/components/Chat/ChatInputContainer';
 import * as UserServices from '../../core/services/users';
 import * as PrivateChatServices from '../../core/services/private-chats';
-import { UserEntity } from '../../core/redux/reducers/auth';
+import { UserEntity } from '../../core/interfaces/user';
 import { PrivateChatEntity } from '../../core/interfaces/chat';
 import Loader from '../../core/components/Loader';
 import { MainRoutes } from '../../core/constants/routes/main-routes';
@@ -28,7 +28,7 @@ const ChatWithUserPage: React.FC = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    socket.emit(SocketEvents.CreateChat, currentUserUid);
+    socket.emit(SocketEvents.JoinPrivateChat, chatId);
   }, [currentUserUid, chatId]);
 
   useEffect(() => {

@@ -12,21 +12,16 @@ import ChatInputWrapper from './styled';
 import * as ChatServices from '../../../services/chats';
 import { updateCurrentMessagesAction } from '../../../redux/actions/chat';
 import {
-  selectCurrentMessages, selectCurrentChatId, selectInterlocutorId,
+  selectCurrentMessages, selectCurrentChatId,
 } from '../../../selectors/chats';
 
 interface MessageFormValues {
   message: string;
 }
 
-interface ChatInputContainerProps {
-  isChannel?: boolean,
-}
-
-const ChatInputContainer: React.FC<ChatInputContainerProps> = ({ isChannel }) => {
+const ChatInputContainer: React.FC = () => {
   const currentUser = useSelector(selectCurrentUser);
   const chatId = useSelector(selectCurrentChatId);
-  const interlocutorId = useSelector(selectInterlocutorId);
   const [form] = Form.useForm();
   const messageInputRef = useRef<Input | null>(null);
   const dispatch = useDispatch();
@@ -44,17 +39,12 @@ const ChatInputContainer: React.FC<ChatInputContainerProps> = ({ isChannel }) =>
       createdAt: new Date(Date.now()),
     };
     dispatch(updateCurrentMessagesAction([...currentMessages, message]));
-    if (isChannel && chatId) {
-      ChatServices.createNewMessageForChat(chatId, message);
-    } else {
-      ChatServices.createNewMessageForChat(chatId, message);
-    }
-    socket.emit(SocketEvents.SendMessage, interlocutorId, message, isChannel);
+    socket.emit(SocketEvents.SendMessage, chatId, message);
     form.resetFields();
     if (messageInputRef.current) {
       messageInputRef.current.focus();
     }
-  }, [currentUser, form, chatId, isChannel, dispatch, currentMessages, interlocutorId]);
+  }, [currentUser, form, chatId, dispatch, currentMessages]);
 
   return (
     <ChatInputWrapper>

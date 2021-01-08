@@ -12,7 +12,7 @@ import {
   logOutAction,
 } from '../redux/actions/auth';
 import * as AuthService from '../services/auth';
-import { UserEntity } from '../redux/reducers/auth';
+import { UserEntity } from '../interfaces/user';
 import * as UserServices from '../services/users';
 
 export const loginThunk = (email: string, password: string) => {
@@ -25,6 +25,7 @@ export const loginThunk = (email: string, password: string) => {
           avatar: '',
           uid: data.user?.uid || '',
           chats: [],
+          conversations: [],
         };
         dispatch(loginSuccessAction(authedUser));
       })
@@ -44,6 +45,7 @@ export const registerThunk = (email: string, password: string) => {
           avatar: '',
           uid: data.user?.uid || '',
           chats: [],
+          conversations: [],
         };
         UserServices.createNewUserInDB(authedUser);
         dispatch(registerSuccessAction(authedUser));

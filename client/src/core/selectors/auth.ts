@@ -1,7 +1,8 @@
 import { createSelector } from 'reselect';
 
 import { AppState } from '../redux/reducers';
-import { State, UserEntity } from '../redux/reducers/auth';
+import { State } from '../redux/reducers/auth';
+import { UserEntity } from '../interfaces/user';
 
 export const selectAuthState = (state: AppState): State => state.auth;
 

@@ -8,7 +8,6 @@ const messageDisappearTime = 2;
 const useSocketConnect = (socket: Socket) => {
   useEffect(() => {
     socket.on(SocketEvents.Connect, () => {
-      console.log(socket.id);
       message.success('The connection was initialized!', messageDisappearTime);
     });
 

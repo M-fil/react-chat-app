@@ -4,6 +4,7 @@
   "description": "",
   "main": "server.js",
   "dependencies": {
+    "firebase-admin": "^9.4.2",
     "socket.io": "^3.0.4"
   },
   "devDependencies": {

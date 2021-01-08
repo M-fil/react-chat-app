@@ -15,6 +15,7 @@ import { socket } from '../../App';
 import { SocketEvents } from '../../core/constants/events';
 import { ConversationEntity } from '../../core/interfaces/conversation';
 import { setCurrentChatIdAction } from '../../core/redux/actions/chat';
+import ConversationController from './components/ConversationController';
 
 const ConversationPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -25,14 +26,26 @@ const ConversationPage: React.FC = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
+    socket.emit(SocketEvents.JoinConversation, conversationId);
+  }, [conversationId]);
+
+  useEffect(() => {
     if (conversation) {
       dispatch(setCurrentChatIdAction(conversation.id));
     }
   }, [conversation, dispatch]);
 
   useEffect(() => {
+    ConversationServices.getLinkOnConversation([], conversationId).link
+      .on('value', (snapshot) => {
+        const data = snapshot.val();
+        setConversation(data);
+      });
+  }, [conversationId]);
+
+  useEffect(() => {
     setIsLoading(true);
-    ConversationServices.getConversationsOfCurrentUserById(currentUserUid, conversationId)
+    ConversationServices.getConversationsOfCurrentUserById(conversationId)
       .then((conversation) => {
         setConversation(conversation);
       })
@@ -55,13 +68,11 @@ const ConversationPage: React.FC = () => {
         showBackButton
         backTo={MainRoutes.ChatOverviewRoute_2}
       />
+      <ConversationController currentConversation={conversation} />
       {isLoading
-        ? (
-          <Loader />
-        )
-        : (
-          <ChatMessages type="group" />
-        )}
+        ? <Loader />
+        : <ChatMessages type="group" />
+      }
       <ChatInputContainer />
     </ChatPageContainer>
   );

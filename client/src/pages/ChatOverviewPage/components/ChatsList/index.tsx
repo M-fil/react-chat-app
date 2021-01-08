@@ -11,14 +11,14 @@ import * as ConversationServices from '../../../../core/services/conversation';
 import { selectCurrentUser } from '../../../../core/selectors/auth';
 import {
   selectConversations, selectCurrentChatId,
-  selectPrivateChatsWithCurrentUser,
+  selectPrivateChatsWithCurrentUser, selectUsersFromCurrentChats,
 } from '../../../../core/selectors/chats';
 import {
   updateCurrentUserChatsAction,
   updateCurrentUserConversationsAction,
   updateCurrentUserPrivateChats,
 } from '../../../../core/redux/actions/chat';
-import { UserEntity } from '../../../../core/redux/reducers/auth';
+import { UserEntity } from '../../../../core/interfaces/user';
 import DeleteModal from './components/DeleteModal';
 import { MainRoutes } from '../../../../core/constants/routes/main-routes';
 import { socket } from '../../../../App';
@@ -38,6 +38,7 @@ const ChatList: React.FC = () => {
   const conversations = useSelector(selectConversations);
   const privateChatsWithCurrentUser = useSelector(selectPrivateChatsWithCurrentUser);
   const currentChatId = useSelector(selectCurrentChatId);
+  const usersFromCurrentChats = useSelector(selectUsersFromCurrentChats);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -45,7 +46,7 @@ const ChatList: React.FC = () => {
     getChat
       .on('value', (snapshot) => {
         const data = snapshot.val();
-        let filteredChats = currentUser.chats.map((chatId) => data[chatId]).filter((chat) => chat);
+        let filteredChats = (currentUser.chats || []).map((chatId) => data[chatId]).filter((chat) => chat);
         dispatch(updateCurrentUserPrivateChats(filteredChats));
       });
 
@@ -68,7 +69,7 @@ const ChatList: React.FC = () => {
   }, [currentUser.uid, dispatch]);
 
   useEffect(() => {
-    const getConversation = ConversationServices.getLinkOnConversation(currentUser.uid, [], '').link;
+    const getConversation = ConversationServices.getLinkOnConversation([], '').link;
     getConversation
       .on('value', (snapshot) => {
         const data = snapshot.val();
@@ -82,16 +83,14 @@ const ChatList: React.FC = () => {
 
   useEffect(() => {
     UserServices
-      .getAllUsersFromDB()
-      .then((usersFromDb) => {
-        if (usersFromDb) {
-          setUsers(Object.values(usersFromDb));
-        }
+      .getAllUsersForAutoComplete(currentUser.uid, usersFromCurrentChats)
+      .then((filteredUsers) => {
+        setUsers(filteredUsers);
       })
       .catch((err) => {
         socket.emit(MainRoutes.ErrorPage, err);
       });
-  }, [setUsers, dispatch]);
+  }, [setUsers, currentUser.uid, usersFromCurrentChats]);
 
   const onChatDeleteClickHandle = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     const target = event.target as HTMLDivElement;
@@ -100,7 +99,6 @@ const ChatList: React.FC = () => {
     const deleteType = targetDeleteButton && targetDeleteButton.dataset.deleteChatButton as MessagesType;
     const targetUid = targetElement && targetElement.dataset.userChatUid;
 
-    console.log('targetUid', targetUid)
     if (targetDeleteButton && targetUid) {
       if (deleteType === 'private') {
         const chatToDelete = users.find((user) => user.uid === targetUid);
@@ -120,12 +118,10 @@ const ChatList: React.FC = () => {
 
   return (
     <ChatListContainer>
-      <ChatListController
-        users={users}
-      />
+      <ChatListController users={users} />
       <div className="chat-list__items" onClick={onChatDeleteClickHandle}>
         {(privateChatsWithCurrentUser).map((chat) => {
-          const chatId =chat.id;
+          const chatId = chat.id;
 
           return (
             <div data-user-chat-uid={chatId} key={chatId}>
