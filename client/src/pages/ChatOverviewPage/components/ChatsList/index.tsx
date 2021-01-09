@@ -6,7 +6,7 @@ import { DeleteOutlined } from '@ant-design/icons';
 import { CheckboxChangeEvent } from 'antd/lib/checkbox';
 
 import ChatListContainer from './styled';
-import DeleteModal from './components/DeleteModal';
+import DeleteModal from '../Modals/DeleteModal';
 import { MainRoutes } from '../../../../core/constants/routes/main-routes';
 import ChatListController from '../ChatListController';
 import { MessagesType } from '../../../../core/components/Chat/ChatMessages';

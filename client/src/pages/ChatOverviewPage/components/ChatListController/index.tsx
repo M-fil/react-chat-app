@@ -1,22 +1,10 @@
 import React, { useCallback, useState } from 'react';
-import { Button, AutoComplete, message, Checkbox } from 'antd';
-import { useSelector } from 'react-redux';
+import { Button, Checkbox } from 'antd';
 import { CheckboxChangeEvent } from 'antd/lib/checkbox';
 
-import * as ChatServices from '../../../../core/services/chats';
-import * as ConversationServices from '../../../../core/services/conversation';
-import * as PrivateChatServices from '../../../../core/services/private-chats';
-import { selectCurrentUser, selectUserConversationIds } from '../../../../core/selectors/auth';
-import { selectChats } from '../../../../core/selectors/chats';
 import { UserEntity } from '../../../../core/interfaces/user';
 import { ChatType } from '../../../../core/interfaces/chat';
-import { socket } from '../../../../App';
-import { SocketEvents } from '../../../../core/constants/events';
-import { InterlocutorEntity } from '../../../../core/interfaces/chat';
-import AutocompleteInput from '../../../../core/components/AutocompleteInput';
-
-const { Option } = AutoComplete;
-export type SelectListItemType = 'conversations' | 'private_messages';
+import CreateChatModal from '../Modals/CreateChatModal';
 
 interface ChatListContainerProps {
   users: UserEntity[],
@@ -27,87 +15,30 @@ interface ChatListContainerProps {
 const ChatListController: React.FC<ChatListContainerProps> = ({
   users, onSelectChatsTypeHandler, visibleChatsType,
 }) => {
-  const [selectedUserEmail, setSelectedUserEmail] = useState<string>('');
-  const currentUser = useSelector(selectCurrentUser);
-  const chats = useSelector(selectChats);
-  const conversationIds = useSelector(selectUserConversationIds);
+  const [isCreateModalVisible, setIsCreateModalVisible] = useState<boolean>(false);
+  const [createChatType, setCreateChatType] = useState<ChatType>('private-chat');
 
-  const onUserValueChange = useCallback((value: string) => {
-    setSelectedUserEmail(value);
-  }, [setSelectedUserEmail]);
-
-  const onCreateNewConversation = useCallback(() => {
-    const adminInterlocutor: InterlocutorEntity = {
-      uid: currentUser.uid,
-      email: currentUser.email,
-      avatar: currentUser.avatar,
-    };
-    const { conversationId } = ConversationServices.createNewConversationInDB(
-      adminInterlocutor, 'Conversation', conversationIds.length,
-    );
-    socket.emit(SocketEvents.CreateConversation, conversationId);
-    ChatServices.addNotificationMessageInDB(conversationId, `${currentUser.email} created this chat`);
-  }, [currentUser, conversationIds]);
-
-  const onCreateNewChat = useCallback(() => {
-    const selectedUser = users.find((user) => user.email === selectedUserEmail);
-    const isChatExists = chats.some((chatId) => (selectedUser?.chats || []).includes(chatId));
-
-    if (!isChatExists && selectedUser) {
-      const interlocutors: InterlocutorEntity[] = [
-        {
-          uid: currentUser.uid,
-          email: currentUser.email,
-          avatar: currentUser.avatar,
-        },
-        {
-          uid: selectedUser.uid,
-          email: selectedUser.email,
-          avatar: selectedUser.avatar,
-        }
-      ];
-      const { chatId } = PrivateChatServices.createPrivateChatInDB(interlocutors);
-      const newChats = [...chats, chatId];
-      interlocutors.forEach((interlocutor) => {
-        ChatServices.updateChatsOfUser(interlocutor.uid, newChats);
-      });
-
-      message.success(`The chat with ${selectedUser.email} was created!`);
-      socket.emit(SocketEvents.CreateChat, selectedUser.uid);
-    } else {
-      message.error(`The chat with ${selectedUser?.email || ''} is already exists`);
-    }
-
-    setSelectedUserEmail('');
-  }, [chats, users, selectedUserEmail, currentUser.uid, currentUser.email, currentUser.avatar]);
-
-  const renderAutoCompleteValue = useCallback((value: UserEntity) => (
-    <Option key={value.uid} value={value.email}>
-      {value.email}
-    </Option>
-  ), []);
-
-  const renderAutoCompleteOption = useCallback((value: UserEntity) => ({
-    value: value.email,
-  }), []);
+  const onOpenCreateChatModal = useCallback((type: ChatType) => () => {
+    setCreateChatType(type);
+    setIsCreateModalVisible(true);
+  }, []);
 
   return (
     <header>
-      <AutocompleteInput<UserEntity, string>
-        selectedValue={selectedUserEmail}
-        values={users}
-        renderValue={renderAutoCompleteValue}
-        renderOption={renderAutoCompleteOption}
-        onValueChange={onUserValueChange}
+      <CreateChatModal
+        isVisible={isCreateModalVisible}
+        setIsVisible={setIsCreateModalVisible}
+        users={users}
+        type={createChatType}
       />
       <Button
-        onClick={onCreateNewChat}
+        onClick={onOpenCreateChatModal('private-chat')}
         htmlType="button"
       >
         Create new chat
       </Button>
       <Button
-        onClick={onCreateNewConversation}
+        onClick={onOpenCreateChatModal('conversation')}
         htmlType="button"
       >
         Create new conversation

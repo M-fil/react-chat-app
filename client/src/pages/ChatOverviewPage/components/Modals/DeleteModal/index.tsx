@@ -2,10 +2,10 @@ import React, { useCallback } from 'react';
 import { message, Modal } from 'antd';
 import { useSelector, useDispatch } from 'react-redux';
 
-import * as ChatServices from '../../../../../../core/services/chats';
-import * as ConversationServices from '../../../../../../core/services/conversation';
-import { selectUserUid, selectUserChatsIds, selectUserConversationIds } from '../../../../../../core/selectors/auth';
-import { updateUserConversationIdsAction, updateUserPrivateChatsIdsAction } from '../../../../../../core/redux/actions/auth';
+import * as ChatServices from '../../../../../core/services/chats';
+import * as ConversationServices from '../../../../../core/services/conversation';
+import { selectUserUid, selectUserChatsIds, selectUserConversationIds } from '../../../../../core/selectors/auth';
+import { updateUserConversationIdsAction, updateUserPrivateChatsIdsAction } from '../../../../../core/redux/actions/auth';
 
 interface DeleteModalProps {
   title?:string,
