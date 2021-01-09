@@ -70,7 +70,9 @@ const ConversationController: React.FC<ConversationControllerProps> = ({ current
       ConversationServices
         .updateInterlocutorsInConversation(currentChatId, [...usersOfCurrentConversation, interlocutor])
         .then(() => {
-          ConversationServices.addConversationIdToUser(currentUserUid, currentChatId);
+          ConversationServices.addConversationIdToUser(
+            currentUserUid, currentChatId, interlocutor.conversations?.length || 0,
+          );
           ChatServices.addNotificationMessageInDB(
             currentChatId,
             `${interlocutor.email} was added to the chat`,

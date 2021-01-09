@@ -7,11 +7,12 @@ export enum ChatActionTypes {
   UpdateCurrentUserPrivateChats = '[Chats] UpdateCurrentUserPrivateChats',
   UpdateCurrentMessages = '[Chat] UpdateCurrentMessages',
   SetCurrentChatId = '[Chat] SetCurrentChatId',
+  SetCurrentMessages = '[Chat] SetCurrentMessages',
 }
 
 export interface UpdateCurrentUserChatsActionType {
   type: typeof ChatActionTypes.UpdateCurrentUserChats,
-  payload: { chats: string[] },
+  payload: { chats: string[], setValue?: boolean },
 }
 
 export interface UpdateCurrentUserConversationsActionType {
@@ -21,7 +22,7 @@ export interface UpdateCurrentUserConversationsActionType {
 
 export interface UpdateCurrentMessagesActionType {
   type: typeof ChatActionTypes.UpdateCurrentMessages,
-  payload: { messages: MessageEntity[] },
+  payload: { newMessage: MessageEntity },
 }
 
 export interface SetCurrentChatIdActionType {
@@ -34,9 +35,15 @@ export interface UpdateCurrentUserPrivateChatsActionType {
   payload: { privateChats: PrivateChatEntity[] },
 }
 
+export interface SetCurrentMessagesActionType {
+  type: ChatActionTypes.SetCurrentMessages,
+  payload: { messages: MessageEntity[] },
+}
+
 export type ChatAction =
   UpdateCurrentUserChatsActionType
   | UpdateCurrentUserConversationsActionType
   | UpdateCurrentUserPrivateChatsActionType
   | UpdateCurrentMessagesActionType
-  | SetCurrentChatIdActionType;
+  | SetCurrentChatIdActionType
+  | SetCurrentMessagesActionType;

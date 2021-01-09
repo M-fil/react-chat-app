@@ -32,3 +32,17 @@ export const registerSuccessAction = (user: UserEntity): AuthAction => ({
 export const logOutAction = (): AuthAction => ({
   type: AuthActionTypes.LogOut,
 });
+
+export const updateUserPrivateChatsIdsAction = (
+  privateChatIds: string[], setValue: boolean = true,
+): AuthAction => ({
+  type: AuthActionTypes.UpdateUserPrivateChatsIds,
+  payload: { privateChatIds, setValue }
+});
+
+export const updateUserConversationIdsAction = (
+  conversationIds: string[], setValue: boolean = true,
+): AuthAction => ({
+  type: AuthActionTypes.UpdateUserConversationIds,
+  payload: { conversationIds, setValue },
+});

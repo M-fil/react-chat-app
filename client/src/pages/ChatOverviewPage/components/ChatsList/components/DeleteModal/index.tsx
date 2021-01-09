@@ -39,10 +39,10 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
 
   const onConfirmDeletion = useCallback(() => {
     const targetConversationToDelete = conversations.find((conversation) => conversation.id === targetIdToDelete);
-    const targetChatToDelete = chats.find((chatId) => chatId === targetConversationToDelete?.id);
+    const targetChatToDelete = chats.find((chatId) => chatId === targetIdToDelete);
 
     if (targetChatToDelete) {
-      const updatedChats = chats.filter((chatId) => chatId !== targetConversationToDelete?.id)
+      const updatedChats = chats.filter((chatId) => chatId !== targetIdToDelete)
       ChatServices
         .updateChatsOfUser(currentUserUid, updatedChats)
         .then(() => {
@@ -57,8 +57,9 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
         });
     } else if (targetConversationToDelete) {
       const updatesConversations = conversations.filter((conversation) => conversation.id !== targetIdToDelete);
+      const removeIndex = conversations.findIndex((conversation) => conversation.id === targetIdToDelete);
       const { name } = targetConversationToDelete;
-      ConversationServices.removeConversationFromDB(targetIdToDelete)
+      ConversationServices.removeConversationFromDB(targetIdToDelete, currentUserUid, removeIndex)
         .then(() => {
           message.success(`Conversation '${name}' was deleted.`);
           dispatch(updateCurrentUserConversationsAction(updatesConversations));

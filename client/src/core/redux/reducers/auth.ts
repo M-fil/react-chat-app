@@ -46,6 +46,26 @@ export const authReducer = (state: State = initialState, action: AuthAction): St
     case AuthActionTypes.LogOut:
       return {
         ...initialState,
+      };
+    case AuthActionTypes.UpdateUserConversationIds:
+      return {
+        ...state,
+        user: {
+          ...state.user,
+          conversations: action.payload.setValue
+            ? action.payload.conversationIds
+            : [...(state.user.conversations || []), ...action.payload.conversationIds],
+        }
+      };
+    case AuthActionTypes.UpdateUserPrivateChatsIds:
+      return {
+        ...state,
+        user: {
+          ...state.user,
+          chats: action.payload.setValue
+            ? action.payload.privateChatIds
+            : [...(state.user.chats || []), ...action.payload.privateChatIds],
+        }
       }
     default:
       return state;

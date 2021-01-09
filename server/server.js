@@ -17,12 +17,9 @@ io.on('connection', (socket) => {
     console.log('You were disconnected by the socket.io...');
   });
 
-  socket.on('message', (message, receiverId) => {
-    createMessageInDB(receiverId,  message);
-  });
-
   socket.on('sendMessage', (receiverId, message, isForAllClient) => {
     console.log('receiverId', receiverId)
+    console.log('all values', receiverId, message.text, isForAllClient)
     if (isForAllClient) {
       io.to(receiverId).emit('message', message, receiverId);
     } else {

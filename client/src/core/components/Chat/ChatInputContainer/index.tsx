@@ -9,11 +9,8 @@ import { socket } from '../../../../App';
 import { MessageEntity } from '../../../interfaces/chat';
 import { selectCurrentUser } from '../../../selectors/auth';
 import ChatInputWrapper from './styled';
-import * as ChatServices from '../../../services/chats';
 import { updateCurrentMessagesAction } from '../../../redux/actions/chat';
-import {
-  selectCurrentMessages, selectCurrentChatId,
-} from '../../../selectors/chats';
+import { selectCurrentChatId } from '../../../selectors/chats';
 
 interface MessageFormValues {
   message: string;
@@ -25,7 +22,6 @@ const ChatInputContainer: React.FC = () => {
   const [form] = Form.useForm();
   const messageInputRef = useRef<Input | null>(null);
   const dispatch = useDispatch();
-  const currentMessages = useSelector(selectCurrentMessages);
 
   const onMessageSubmit = useCallback((values: MessageFormValues) => {
     const message: MessageEntity = {
@@ -38,13 +34,13 @@ const ChatInputContainer: React.FC = () => {
       },
       createdAt: new Date(Date.now()),
     };
-    dispatch(updateCurrentMessagesAction([...currentMessages, message]));
-    socket.emit(SocketEvents.SendMessage, chatId, message);
+    dispatch(updateCurrentMessagesAction(message));
+    socket.emit(SocketEvents.SendMessage, chatId, message, false);
     form.resetFields();
     if (messageInputRef.current) {
       messageInputRef.current.focus();
     }
-  }, [currentUser, form, chatId, dispatch, currentMessages]);
+  }, [currentUser, form, chatId, dispatch]);
 
   return (
     <ChatInputWrapper>

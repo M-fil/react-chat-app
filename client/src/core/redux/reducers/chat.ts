@@ -23,7 +23,9 @@ export const chatsReducer = (state: State = initialState, action: ChatAction): S
     case ChatActionTypes.UpdateCurrentUserChats:
       return {
         ...state,
-        chats: action.payload.chats,
+        chats: action.payload.setValue
+          ? action.payload.chats
+          : [...state.chats, ...action.payload.chats],
       };
     case ChatActionTypes.UpdateCurrentUserConversations:
       return {
@@ -33,7 +35,7 @@ export const chatsReducer = (state: State = initialState, action: ChatAction): S
     case ChatActionTypes.UpdateCurrentMessages:
       return {
         ...state,
-        currentMessages: action.payload.messages,
+        currentMessages: [...state.currentMessages, action.payload.newMessage],
       };
     case ChatActionTypes.SetCurrentChatId:
       return {
@@ -44,6 +46,11 @@ export const chatsReducer = (state: State = initialState, action: ChatAction): S
       return {
         ...state,
         privateChats: action.payload.privateChats,
+      };
+    case ChatActionTypes.SetCurrentMessages:
+      return {
+        ...state,
+        currentMessages: action.payload.messages,
       };
     default:
       return state;

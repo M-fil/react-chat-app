@@ -6,6 +6,7 @@ import { InterlocutorEntity } from '../interfaces/chat';
 import { ConversationEntity } from '../interfaces/conversation';
 import { socket } from '../../App';
 import { SocketEvents } from '../constants/events';
+import { getLinkOnUserByUid } from './users';
 
 export const getLinkOnConversation = (
   extraPath: string[] = [], id: string = shortid.generate(),
@@ -26,14 +27,16 @@ export const getConversationsOfCurrentUserById = (conversationId: string) => {
     })
 }
 
-export const addConversationIdToUser = (userId: string, conversationId: string) => {
+export const addConversationIdToUser = (
+  userId: string, conversationId: string, numberOfConversations: number,
+) => {
   return firebaseServices.rdb
-    .ref(`${DBCollections.Users}/${userId}/conversations`)
-    .push(conversationId);
+    .ref(`${DBCollections.Users}/${userId}/conversations/${numberOfConversations}`)
+    .set(conversationId);
 }
 
 export const createNewConversationInDB = (
-  user: InterlocutorEntity, conversationName: string,
+  user: InterlocutorEntity, conversationName: string, numberOfConversations: number,
 ) => {
   const { link, id } = getLinkOnConversation();
   const initialConversation: ConversationEntity = {
@@ -45,7 +48,7 @@ export const createNewConversationInDB = (
 
   const callback = link.set(initialConversation)
     .then(() => {
-      addConversationIdToUser(user.uid, id);
+      addConversationIdToUser(user.uid, id, numberOfConversations);
     });
   socket.emit(SocketEvents.CreateConversation, id);
 
@@ -82,8 +85,15 @@ export const getMessagesOfConversation = (conversationId: string) => {
     });
 }
 
-export const removeConversationFromDB = (conversationId: string) => {
-  return getLinkOnConversation([], conversationId).link.remove();
+export const removeConversationFromDB = (
+  conversationId: string, userId: string, conversationIndex: number,
+) => {
+  return getLinkOnConversation([], conversationId).link
+    .remove()
+    .then(() => {
+      getLinkOnUserByUid(userId, ['conversations', String(conversationIndex)]).remove();
+    })
+    .catch(() => {});
 };
 
 export const updateInterlocutorsInConversation = (

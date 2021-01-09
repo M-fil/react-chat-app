@@ -15,6 +15,10 @@ const ChatMessagesContainer = styled('div')`
   .notification-message {
     text-align: center;
   }
+
+  .no-messages-text {
+    text-align: center;
+  }
 `;
 
 export default ChatMessagesContainer;

@@ -7,7 +7,7 @@ import { selectUserUid } from './auth';
 
 const selectChatsState = (state: AppState): State => state.chat;
 
-interface PrivateChatWithCurrentUserEntity {
+export interface PrivateChatWithCurrentUserEntity {
   user: InterlocutorEntity | undefined,
   id: string,
 }

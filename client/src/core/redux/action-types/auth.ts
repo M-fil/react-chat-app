@@ -8,6 +8,8 @@ export enum AuthActionTypes {
   RegisterFailed = '[Auth] RegisterFailed',
 
   LogOut = '[Auth] LogOut',
+  UpdateUserConversationIds = '[Auth] UpdateUserConversationIds',
+  UpdateUserPrivateChatsIds = '[Auth] UpdateUserPrivateChatsIds',
 }
 
 export interface AuthInitActionType {
@@ -28,10 +30,21 @@ export interface LogOutActionType {
   type: typeof AuthActionTypes.LogOut,
 }
 
+export interface UpdateUserPrivateChatsIdsActionType {
+  type: typeof AuthActionTypes.UpdateUserPrivateChatsIds,
+  payload: { privateChatIds: string[], setValue?: boolean },
+}
+
+export interface UpdateUserConversationIdsActionType {
+  type: typeof AuthActionTypes.UpdateUserConversationIds,
+  payload: { conversationIds: string[], setValue?: boolean },
+}
+
+
 export type AuthAction =
   AuthInitActionType
   | AuthSuccessActionType
   | AuthFailedActionType
-  | LogOutActionType;
-
-
+  | LogOutActionType
+  | UpdateUserConversationIdsActionType
+  | UpdateUserPrivateChatsIdsActionType;

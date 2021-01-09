@@ -35,3 +35,10 @@ export const selectUserAvatar = createSelector(
   selectAuthState,
   (state: State): string => state.user?.avatar || ''
 );
+
+export const selectUserConversationIds = createSelector(
+  selectAuthState,
+  (state: State): string[] => Array.isArray(state.user.conversations)
+    ? state.user.conversations
+    : [],
+);

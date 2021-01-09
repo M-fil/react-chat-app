@@ -29,7 +29,7 @@ const ChatWithUserPage: React.FC = () => {
 
   useEffect(() => {
     socket.emit(SocketEvents.JoinPrivateChat, chatId);
-  }, [currentUserUid, chatId]);
+  }, [chatId]);
 
   useEffect(() => {
     if (currentChat) {
@@ -66,9 +66,7 @@ const ChatWithUserPage: React.FC = () => {
           />
           {!isLoading
             ? (
-              <ChatMessages
-                type="private"
-              />
+              <ChatMessages />
             )
             : (
               <Loader />

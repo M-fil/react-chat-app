@@ -1,126 +1,63 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Button } from 'antd';
-import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { DeleteOutlined } from '@ant-design/icons';
 
 import ChatListContainer from './styled';
-import * as UserServices from '../../../../core/services/users';
-import * as PrivateChatServices from '../../../../core/services/private-chats';
-import * as ConversationServices from '../../../../core/services/conversation';
-import { selectCurrentUser } from '../../../../core/selectors/auth';
-import {
-  selectConversations, selectCurrentChatId,
-  selectPrivateChatsWithCurrentUser, selectUsersFromCurrentChats,
-} from '../../../../core/selectors/chats';
-import {
-  updateCurrentUserChatsAction,
-  updateCurrentUserConversationsAction,
-  updateCurrentUserPrivateChats,
-} from '../../../../core/redux/actions/chat';
-import { UserEntity } from '../../../../core/interfaces/user';
 import DeleteModal from './components/DeleteModal';
 import { MainRoutes } from '../../../../core/constants/routes/main-routes';
-import { socket } from '../../../../App';
 import ChatListController from '../ChatListController';
 import { MessagesType } from '../../../../core/components/Chat/ChatMessages';
+import { useConversationsChange } from '../../../../core/hooks/chat/useConversationChange';
+import { usePrivateChatsChange } from '../../../../core/hooks/chat/usePrivateChatChange';
+import { useUsersInDBChange } from '../../../../core/hooks/user/useUsersInDBChange';
 
 export interface SearchUserOption {
   email: string,
   uid: string,
 }
+const NO_ANY_CHATS_TEXT = 'No any chats or conversations were created yet...';
 
 const ChatList: React.FC = () => {
-  const [users, setUsers] = useState<UserEntity[]>([]);
   const [targetIdToDelete, setTargetIdToDelete] = useState<string>('');
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState<boolean>(false);
-  const currentUser = useSelector(selectCurrentUser);
-  const conversations = useSelector(selectConversations);
-  const privateChatsWithCurrentUser = useSelector(selectPrivateChatsWithCurrentUser);
-  const currentChatId = useSelector(selectCurrentChatId);
-  const usersFromCurrentChats = useSelector(selectUsersFromCurrentChats);
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    const getChat = PrivateChatServices.getLinkOnPrivateChatInDB('');
-    getChat
-      .on('value', (snapshot) => {
-        const data = snapshot.val();
-        let filteredChats = (currentUser.chats || []).map((chatId) => data[chatId]).filter((chat) => chat);
-        dispatch(updateCurrentUserPrivateChats(filteredChats));
-      });
-
-    return () => {
-      getChat.off('value');
-    };
-  }, [currentChatId, dispatch, currentUser.chats]);
-
-  useEffect(() => {
-    const getLinkOnUser = UserServices.getLinkOnUserByUid(currentUser.uid);
-    getLinkOnUser
-      .on('value', (snapshot) => {
-        const data = snapshot.val();
-        dispatch(updateCurrentUserChatsAction(data.chats))
-      });
-
-    return () => {
-      getLinkOnUser.off('value');
-    }
-  }, [currentUser.uid, dispatch]);
-
-  useEffect(() => {
-    const getConversation = ConversationServices.getLinkOnConversation([], '').link;
-    getConversation
-      .on('value', (snapshot) => {
-        const data = snapshot.val();
-        dispatch(updateCurrentUserConversationsAction(data ? Object.values(data) : []));
-      });
-
-    return () => {
-      getConversation.off('value');
-    }
-  }, [currentUser.uid, dispatch]);
-
-  useEffect(() => {
-    UserServices
-      .getAllUsersForAutoComplete(currentUser.uid, usersFromCurrentChats)
-      .then((filteredUsers) => {
-        setUsers(filteredUsers);
-      })
-      .catch((err) => {
-        socket.emit(MainRoutes.ErrorPage, err);
-      });
-  }, [setUsers, currentUser.uid, usersFromCurrentChats]);
+  const { conversations } = useConversationsChange();
+  const { privateChats } = usePrivateChatsChange();
+  const { users } = useUsersInDBChange();
+  const isNeedToShowNoChatsMessage = privateChats.length === 0 && conversations.length === 0;
 
   const onChatDeleteClickHandle = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     const target = event.target as HTMLDivElement;
     const targetElement = target.closest('[data-user-chat-uid]') as HTMLDivElement;
     const targetDeleteButton = target.closest('[data-delete-chat-button') as HTMLButtonElement;
     const deleteType = targetDeleteButton && targetDeleteButton.dataset.deleteChatButton as MessagesType;
-    const targetUid = targetElement && targetElement.dataset.userChatUid;
+    const targetId = targetElement && targetElement.dataset.userChatUid;
 
-    if (targetDeleteButton && targetUid) {
+    if (targetDeleteButton && targetId) {
       if (deleteType === 'private') {
-        const chatToDelete = users.find((user) => user.uid === targetUid);
+        const chatToDelete = privateChats.find((chat) => chat.id === targetId);
         if (chatToDelete) {
           setIsDeleteModalVisible(true);
-          setTargetIdToDelete(chatToDelete.uid);
+          setTargetIdToDelete(chatToDelete.id);
         }
       } else {
-        const conversationToDelete = conversations.find((conversation) => conversation.id === targetUid);
+        const conversationToDelete = conversations.find((conversation) => conversation.id === targetId);
         if (conversationToDelete) {
           setIsDeleteModalVisible(true);
           setTargetIdToDelete(conversationToDelete.id);
         }
       }
     }
-  }, [users, setTargetIdToDelete, conversations, setIsDeleteModalVisible]);
+  }, [privateChats, setTargetIdToDelete, conversations, setIsDeleteModalVisible]);
 
   return (
     <ChatListContainer>
       <ChatListController users={users} />
       <div className="chat-list__items" onClick={onChatDeleteClickHandle}>
-        {(privateChatsWithCurrentUser).map((chat) => {
+        {isNeedToShowNoChatsMessage && (
+          <div>{NO_ANY_CHATS_TEXT}</div>
+        )}
+        {(privateChats).map((chat) => {
           const chatId = chat.id;
 
           return (

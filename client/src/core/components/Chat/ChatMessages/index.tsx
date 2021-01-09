@@ -8,15 +8,12 @@ import { SocketEvents } from '../../../constants/events';
 import * as ChatServices from '../../../services/chats';
 import { selectUserUid } from '../../../selectors/auth';
 import { selectCurrentMessages, selectCurrentChatId } from '../../../selectors/chats';
-import { updateCurrentMessagesAction } from '../../../redux/actions/chat';
+import { updateCurrentMessagesAction, setCurrentMessagesAction } from '../../../redux/actions/chat';
 
 export type MessagesType = 'group' | 'private';
+const NO_MESSAGES_TEXT = 'No any messages with this user...';
 
-interface ChatMessagesProps {
-  type: MessagesType,
-}
-
-const ChatMessages: React.FC<ChatMessagesProps> = ({ type }) => {
+const ChatMessages: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const currentUserUid = useSelector(selectUserUid);
   const currentChatId = useSelector(selectCurrentChatId);
@@ -33,17 +30,21 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ type }) => {
   }, []);
 
   useEffect(() => {
-    socket.on(SocketEvents.ReceiveMessage, (message: MessageEntity) => {
-      const newMessages = [...currentMessages, message];
-      dispatch(updateCurrentMessagesAction(newMessages));
-    });
-  }, [currentUserUid, type, currentChatId, currentMessages, dispatch]);
+    const listenMessageReceive = (message: MessageEntity) => {
+      dispatch(updateCurrentMessagesAction(message));
+    };
+    socket.on(SocketEvents.ReceiveMessage, listenMessageReceive);
+
+    return () => {
+      socket.off(SocketEvents.ReceiveMessage, listenMessageReceive);
+    };
+  }, [dispatch]);
 
   useEffect(() => {
     setIsLoading(true);
     ChatServices.getAllMessagesFromChat(currentChatId)
       .then((messages) => {
-        dispatch(updateCurrentMessagesAction(messages ? Object.values(messages) : []))
+        dispatch(setCurrentMessagesAction(messages ? Object.values(messages) : []))
         setIsLoading(false);
         scrollToTheLastMessage();
       })
@@ -51,7 +52,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ type }) => {
         setIsLoading(false);
         socket.emit(SocketEvents.Error, error);
       });
-  }, [currentUserUid, scrollToTheLastMessage, currentChatId, type, dispatch]);
+  }, [currentUserUid, scrollToTheLastMessage, currentChatId, dispatch]);
 
   useEffect(() => {
     const lastMessage = currentMessages[currentMessages.length - 1];
@@ -70,6 +71,11 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ type }) => {
           </h3>
         ) : (
           <div className="messages-wrapper">
+            {currentMessages.length === 0 && !isLoading && (
+              <div className="no-messages-text">
+                {NO_MESSAGES_TEXT}
+              </div>
+            )}
             {currentMessages.map((message) => {
               const isCurrentUser = message.from?.uid !== currentUserUid;
 

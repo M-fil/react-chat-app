@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import * as ChatServices from '../../../../core/services/chats';
 import * as ConversationServices from '../../../../core/services/conversation';
 import * as PrivateChatServices from '../../../../core/services/private-chats';
-import { selectCurrentUser } from '../../../../core/selectors/auth';
+import { selectCurrentUser, selectUserConversationIds } from '../../../../core/selectors/auth';
 import { selectChats } from '../../../../core/selectors/chats';
 import { UserEntity } from '../../../../core/interfaces/user';
 import { socket } from '../../../../App';
@@ -24,6 +24,7 @@ const ChatListController: React.FC<ChatListContainerProps> = ({ users }) => {
   const [selectedUserEmail, setSelectedUserEmail] = useState<string>('');
   const currentUser = useSelector(selectCurrentUser);
   const chats = useSelector(selectChats);
+  const conversationIds = useSelector(selectUserConversationIds);
 
   const onUserValueChange = useCallback((value: string) => {
     setSelectedUserEmail(value);
@@ -35,10 +36,12 @@ const ChatListController: React.FC<ChatListContainerProps> = ({ users }) => {
       email: currentUser.email,
       avatar: currentUser.avatar,
     };
-    const { conversationId } = ConversationServices.createNewConversationInDB(adminInterlocutor, 'Conversation');
+    const { conversationId } = ConversationServices.createNewConversationInDB(
+      adminInterlocutor, 'Conversation', conversationIds.length,
+    );
     socket.emit(SocketEvents.CreateConversation, conversationId);
     ChatServices.addNotificationMessageInDB(conversationId, `${currentUser.email} created this chat`);
-  }, [currentUser]);
+  }, [currentUser, conversationIds]);
 
   const onCreateNewChat = useCallback(() => {
     const selectedUser = users.find((user) => user.email === selectedUserEmail);

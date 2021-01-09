@@ -25,9 +25,10 @@ export const getAllUsersFromDB = () => {
     });
 }
 
-export const getLinkOnUserByUid = (uid: string) => {
+export const getLinkOnUserByUid = (uid: string, extraPath: string[] = []) => {
+  const path = extraPath.join();
   return firebaseServices.rdb
-    .ref(`${DBCollections.Users}/${uid}`);
+    .ref(`${DBCollections.Users}/${uid}/${path}`);
 }
 
 export const getUserFromDBByUid = (uid: string): Promise<UserEntity> => {

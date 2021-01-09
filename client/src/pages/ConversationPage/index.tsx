@@ -71,7 +71,7 @@ const ConversationPage: React.FC = () => {
       <ConversationController currentConversation={conversation} />
       {isLoading
         ? <Loader />
-        : <ChatMessages type="group" />
+        : <ChatMessages />
       }
       <ChatInputContainer />
     </ChatPageContainer>
