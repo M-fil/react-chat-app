@@ -66,12 +66,13 @@ const ConversationController: React.FC<ConversationControllerProps> = ({ current
     if (interlocutor && currentChatId) {
       delete interlocutor.chats;
       delete interlocutor.conversations;
+      const newInterlocutors = [...usersOfCurrentConversation, interlocutor];
       
       ConversationServices
-        .updateInterlocutorsInConversation(currentChatId, [...usersOfCurrentConversation, interlocutor])
+        .updateInterlocutorsInConversation(currentChatId, newInterlocutors)
         .then(() => {
           ConversationServices.addConversationIdToUser(
-            currentUserUid, currentChatId, interlocutor.conversations?.length || 0,
+            interlocutor.uid, currentChatId, interlocutor.conversations?.length || 0,
           );
           ChatServices.addNotificationMessageInDB(
             currentChatId,
@@ -87,7 +88,7 @@ const ConversationController: React.FC<ConversationControllerProps> = ({ current
     } else {
       message.error(errorMessage);
     }
-  }, [users, selectedUserEmail, currentChatId, currentUserUid, usersOfCurrentConversation]);
+  }, [users, selectedUserEmail, currentChatId, usersOfCurrentConversation]);
 
   const onAddToConversationKeyDownHandler = useCallback((event: KeyboardEventInit) => {
     if (event.key === 'enter') {
@@ -108,6 +109,7 @@ const ConversationController: React.FC<ConversationControllerProps> = ({ current
       <UsersListModal
         isVisible={isListOfUsersVisible}
         users={currentConversation?.interlocutors || []}
+        adminId={currentConversation?.admin.uid || ''}
         onCancel={onCloseListOfUsers}
         withFooterButtons={false}
       />

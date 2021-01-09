@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { Button } from 'antd';
+import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { DeleteOutlined } from '@ant-design/icons';
 import { CheckboxChangeEvent } from 'antd/lib/checkbox';
@@ -13,12 +14,14 @@ import { useConversationsChange } from '../../../../core/hooks/chat/useConversat
 import { usePrivateChatsChange } from '../../../../core/hooks/chat/usePrivateChatChange';
 import { useUsersInDBChange } from '../../../../core/hooks/user/useUsersInDBChange';
 import { ChatType } from '../../../../core/interfaces/chat';
+import { selectUserUid } from '../../../../core/selectors/auth';
 
 export interface SearchUserOption {
   email: string,
   uid: string,
 }
 const NO_ANY_CHATS_TEXT = 'No any chats or conversations were created yet...';
+const NO_ANY_CHATS_TO_SHOW_TEXT = 'No any chats or conversations to show...';
 
 const ChatList: React.FC = () => {
   const [targetIdToDelete, setTargetIdToDelete] = useState<string>('');
@@ -27,6 +30,7 @@ const ChatList: React.FC = () => {
   const { conversations } = useConversationsChange();
   const { privateChats } = usePrivateChatsChange();
   const { users } = useUsersInDBChange();
+  const currentUserUid = useSelector(selectUserUid);
   const isNeedToShowNoChatsMessage = privateChats.length === 0 && conversations.length === 0;
 
   const onChatDeleteClickHandle = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
@@ -51,7 +55,9 @@ const ChatList: React.FC = () => {
         }
       }
     }
-  }, [privateChats, setTargetIdToDelete, conversations, setIsDeleteModalVisible]);
+  }, [
+    privateChats, setTargetIdToDelete, conversations, setIsDeleteModalVisible,
+  ]);
 
   const onSelectChatsTypeHandler = useCallback((type: ChatType) => (event: CheckboxChangeEvent) => {
     const isChecked = event.target.checked;
@@ -74,6 +80,9 @@ const ChatList: React.FC = () => {
       <div className="chat-list__items" onClick={onChatDeleteClickHandle}>
         {isNeedToShowNoChatsMessage && (
           <div>{NO_ANY_CHATS_TEXT}</div>
+        )}
+        {visibleChatsType.length === 0 && !isNeedToShowNoChatsMessage && (
+          <div>{NO_ANY_CHATS_TO_SHOW_TEXT}</div>
         )}
         {visibleChatsType.includes('private-chat') && (privateChats).map((chat) => {
           const chatId = chat.id;
@@ -106,13 +115,15 @@ const ChatList: React.FC = () => {
             >
               {conversation.name}
             </Link>
-            <Button
-              type="primary"
-              className="delete-chat-button"
-              data-delete-chat-button="group"
-            >
-              <DeleteOutlined />
-            </Button>
+            {conversation.admin.uid === currentUserUid && (
+              <Button
+                type="primary"
+                className="delete-chat-button"
+                data-delete-chat-button="group"
+              >
+                <DeleteOutlined />
+              </Button>
+            )}
           </div>
         ))}
       </div>

@@ -12,6 +12,7 @@ interface UsersListModalProps {
   title?: string,
   isVisible: boolean,
   users: InterlocutorEntity[],
+  adminId: string,
   onCancel?: () => void,
   withFooterButtons?: boolean,
 }
@@ -20,7 +21,7 @@ const mockFunction = () => {};
 const DEFAULT_MODAL_TITLE = 'Interlocutors of this conversation'
 
 const UsersListModal: React.FC<UsersListModalProps> = ({
-  isVisible, users, onCancel, withFooterButtons, title = DEFAULT_MODAL_TITLE,
+  isVisible, users, onCancel, withFooterButtons, title = DEFAULT_MODAL_TITLE, adminId,
 }) => {
   const currentChatId = useSelector(selectCurrentChatId);
   const currentUserUid = useSelector(selectUserUid);
@@ -57,11 +58,16 @@ const UsersListModal: React.FC<UsersListModalProps> = ({
       <ul onClick={onDeleteUserFromConversation}>
         {interlocutors.map((interlocutor) => {
           const avatarText = interlocutor.email && interlocutor.email[0];
-          const isAdmin = interlocutor.uid === currentUserUid;
+          const isAdmin = (interlocutor.uid === adminId) && adminId;
+          const isCurrentUser = interlocutor.uid === currentUserUid;
+          const allowToDeleteUser = (currentUserUid === adminId) && !isAdmin;
 
           return (
             <div key={interlocutor.uid}>
               {isAdmin && (
+                <Tag color="purple">Admin</Tag>
+              )}
+              {isCurrentUser && (
                 <Tag color="gold">You</Tag>
               )}
               <Avatar>
@@ -70,7 +76,7 @@ const UsersListModal: React.FC<UsersListModalProps> = ({
               <strong>
                 {interlocutor.email}
               </strong>
-              {!isAdmin && (
+              {allowToDeleteUser && (
                 <Button type="link" data-delete-interlocutor={interlocutor.uid}>
                   delete
                 </Button>

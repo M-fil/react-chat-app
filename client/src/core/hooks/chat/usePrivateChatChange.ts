@@ -3,10 +3,11 @@ import { useSelector, useDispatch } from 'react-redux';
 
 import * as UserServices from '../../services/users';
 import * as PrivateChatServices from '../../services/private-chats';
-import { selectUserChats, selectUserUid } from '../../selectors/auth';
+import { selectUserChatsIds, selectUserUid } from '../../selectors/auth';
 import { selectPrivateChatsWithCurrentUser, PrivateChatWithCurrentUserEntity } from '../../selectors/chats';
 import { updateCurrentUserPrivateChats } from '../../redux/actions/chat';
 import { updateUserPrivateChatsIdsAction } from '../../redux/actions/auth';
+import { PrivateChatEntity } from '../../interfaces/chat';
 
 interface UsePrivateChatChangeReturnedValue {
   privateChats: PrivateChatWithCurrentUserEntity[],
@@ -14,23 +15,29 @@ interface UsePrivateChatChangeReturnedValue {
 
 export const usePrivateChatsChange = (): UsePrivateChatChangeReturnedValue => {
   const dispatch = useDispatch();
-  const currentUserChats = useSelector(selectUserChats);
+  const currentUserChatsIds = useSelector(selectUserChatsIds);
   const currentUserUid = useSelector(selectUserUid);
   const privateChatsWithCurrentUser = useSelector(selectPrivateChatsWithCurrentUser);
 
   useEffect(() => {
-    const getChat = PrivateChatServices.getLinkOnPrivateChatInDB('');
-    getChat
+    const getChats = PrivateChatServices.getLinkOnPrivateChatInDB('');
+    getChats
       .on('value', (snapshot) => {
         const data = snapshot.val();
-        let filteredChats = (currentUserChats || []).map((chatId) => data[chatId]).filter((chat) => chat);
-        dispatch(updateCurrentUserPrivateChats(filteredChats));
+        const result: PrivateChatEntity[] = [];
+        currentUserChatsIds.forEach((id) => {
+          const value = data && data[id];
+          if (value && id) {
+            result.push(value);
+          }
+        });
+        dispatch(updateCurrentUserPrivateChats(result));
       });
 
     return () => {
-      getChat.off('value');
+      getChats.off('value');
     };
-  }, [dispatch, currentUserChats]);
+  }, [dispatch, currentUserChatsIds]);
 
   useEffect(() => {
     const getLinkOnUser = UserServices.getLinkOnUserByUid(currentUserUid);

@@ -4,9 +4,8 @@ import { useSelector, useDispatch } from 'react-redux';
 
 import * as ChatServices from '../../../../../../core/services/chats';
 import * as ConversationServices from '../../../../../../core/services/conversation';
-import { selectChats, selectConversations } from '../../../../../../core/selectors/chats';
-import { selectUserUid } from '../../../../../../core/selectors/auth';
-import { updateCurrentUserChatsAction, updateCurrentUserConversationsAction } from '../../../../../../core/redux/actions/chat';
+import { selectUserUid, selectUserChatsIds, selectUserConversationIds } from '../../../../../../core/selectors/auth';
+import { updateUserConversationIdsAction, updateUserPrivateChatsIdsAction } from '../../../../../../core/redux/actions/auth';
 
 interface DeleteModalProps {
   title?:string,
@@ -28,8 +27,8 @@ const defaultModalValues: {
 const DeleteModal: React.FC<DeleteModalProps> = ({
   title, targetIdToDelete, setIsVisible, isVisible,
 }) => {
-  const chats = useSelector(selectChats);
-  const conversations = useSelector(selectConversations);
+  const userChatsIds = useSelector(selectUserChatsIds);
+  const userConversationsIds = useSelector(selectUserConversationIds);
   const currentUserUid = useSelector(selectUserUid);
   const dispatch = useDispatch();
 
@@ -38,16 +37,16 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
   }, [setIsVisible]);
 
   const onConfirmDeletion = useCallback(() => {
-    const targetConversationToDelete = conversations.find((conversation) => conversation.id === targetIdToDelete);
-    const targetChatToDelete = chats.find((chatId) => chatId === targetIdToDelete);
+    const targetConversationToDelete = userConversationsIds.find((id) => id === targetIdToDelete);
+    const targetChatToDelete = userChatsIds.find((chatId) => chatId === targetIdToDelete);
 
     if (targetChatToDelete) {
-      const updatedChats = chats.filter((chatId) => chatId !== targetIdToDelete)
+      const updatedChats = userChatsIds.filter((chatId) => chatId !== targetIdToDelete)
       ChatServices
         .updateChatsOfUser(currentUserUid, updatedChats)
         .then(() => {
           message.success('The chat was successfully deleted');
-          dispatch(updateCurrentUserChatsAction(updatedChats));
+          dispatch(updateUserPrivateChatsIdsAction(updatedChats));
         })
         .catch(() => {
           message.error('The error occurred while deleting the chat with');
@@ -56,22 +55,21 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
           setIsVisible(false);
         });
     } else if (targetConversationToDelete) {
-      const updatesConversations = conversations.filter((conversation) => conversation.id !== targetIdToDelete);
-      const removeIndex = conversations.findIndex((conversation) => conversation.id === targetIdToDelete);
-      const { name } = targetConversationToDelete;
+      const updatesConversations = userConversationsIds.filter((id) => id !== targetIdToDelete)
+      const removeIndex = userConversationsIds.findIndex((id) => id === targetIdToDelete);
       ConversationServices.removeConversationFromDB(targetIdToDelete, currentUserUid, removeIndex)
         .then(() => {
-          message.success(`Conversation '${name}' was deleted.`);
-          dispatch(updateCurrentUserConversationsAction(updatesConversations));
+          message.success('Conversation was deleted.');
+          dispatch(updateUserConversationIdsAction(updatesConversations));
         })
         .catch(() => {
-          message.error(`The error occurred while deleting the '${name}' conversation`);
+          message.error('The error occurred while deleting this conversation.');
         })
         .finally(() => {
           setIsVisible(false);
         });
     }
-  }, [setIsVisible, chats, conversations, currentUserUid, dispatch, targetIdToDelete]);
+  }, [setIsVisible, userConversationsIds, currentUserUid, dispatch, targetIdToDelete, userChatsIds]);
 
   return (
     <Modal

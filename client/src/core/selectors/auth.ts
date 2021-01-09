@@ -21,7 +21,7 @@ export const selectUserEmail = createSelector(
   (state: State): string => state.user?.email || '',
 );
 
-export const selectUserChats = createSelector(
+export const selectUserChatsIds = createSelector(
   selectAuthState,
   (state: State): string[] => state.user.chats || [],
 );
