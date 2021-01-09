@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { Button, AutoComplete, message, Checkbox } from 'antd';
 import { useSelector } from 'react-redux';
+import { CheckboxChangeEvent } from 'antd/lib/checkbox';
 
 import * as ChatServices from '../../../../core/services/chats';
 import * as ConversationServices from '../../../../core/services/conversation';
@@ -8,6 +9,7 @@ import * as PrivateChatServices from '../../../../core/services/private-chats';
 import { selectCurrentUser, selectUserConversationIds } from '../../../../core/selectors/auth';
 import { selectChats } from '../../../../core/selectors/chats';
 import { UserEntity } from '../../../../core/interfaces/user';
+import { ChatType } from '../../../../core/interfaces/chat';
 import { socket } from '../../../../App';
 import { SocketEvents } from '../../../../core/constants/events';
 import { InterlocutorEntity } from '../../../../core/interfaces/chat';
@@ -18,9 +20,13 @@ export type SelectListItemType = 'conversations' | 'private_messages';
 
 interface ChatListContainerProps {
   users: UserEntity[],
+  onSelectChatsTypeHandler: (type: ChatType) => (event: CheckboxChangeEvent) => void,
+  visibleChatsType: ChatType[],
 }
 
-const ChatListController: React.FC<ChatListContainerProps> = ({ users }) => {
+const ChatListController: React.FC<ChatListContainerProps> = ({
+  users, onSelectChatsTypeHandler, visibleChatsType,
+}) => {
   const [selectedUserEmail, setSelectedUserEmail] = useState<string>('');
   const currentUser = useSelector(selectCurrentUser);
   const chats = useSelector(selectChats);
@@ -75,10 +81,6 @@ const ChatListController: React.FC<ChatListContainerProps> = ({ users }) => {
     setSelectedUserEmail('');
   }, [chats, users, selectedUserEmail, currentUser.uid, currentUser.email, currentUser.avatar]);
 
-  const onSelectItemsChangeHandle = useCallback((type: SelectListItemType) => () => {
-    
-  }, []);
-
   const renderAutoCompleteValue = useCallback((value: UserEntity) => (
     <Option key={value.uid} value={value.email}>
       {value.email}
@@ -112,10 +114,16 @@ const ChatListController: React.FC<ChatListContainerProps> = ({ users }) => {
       </Button>
 
       <div className="list-items-buttons">
-        <Checkbox onChange={onSelectItemsChangeHandle('private_messages')}>
+        <Checkbox
+          onChange={onSelectChatsTypeHandler('private-chat')}
+          checked={visibleChatsType.includes('private-chat')}
+        >
           Private Chats
         </Checkbox>
-        <Checkbox onChange={onSelectItemsChangeHandle('conversations')}>
+        <Checkbox
+          onChange={onSelectChatsTypeHandler('conversation')}
+          checked={visibleChatsType.includes('conversation')}
+        >
           Conversations
         </Checkbox>
       </div>

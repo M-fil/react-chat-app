@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { Button } from 'antd';
 import { Link } from 'react-router-dom';
 import { DeleteOutlined } from '@ant-design/icons';
+import { CheckboxChangeEvent } from 'antd/lib/checkbox';
 
 import ChatListContainer from './styled';
 import DeleteModal from './components/DeleteModal';
@@ -11,6 +12,7 @@ import { MessagesType } from '../../../../core/components/Chat/ChatMessages';
 import { useConversationsChange } from '../../../../core/hooks/chat/useConversationChange';
 import { usePrivateChatsChange } from '../../../../core/hooks/chat/usePrivateChatChange';
 import { useUsersInDBChange } from '../../../../core/hooks/user/useUsersInDBChange';
+import { ChatType } from '../../../../core/interfaces/chat';
 
 export interface SearchUserOption {
   email: string,
@@ -20,6 +22,7 @@ const NO_ANY_CHATS_TEXT = 'No any chats or conversations were created yet...';
 
 const ChatList: React.FC = () => {
   const [targetIdToDelete, setTargetIdToDelete] = useState<string>('');
+  const [visibleChatsType, setVisibleChatsType] = useState<ChatType[]>(['private-chat', 'conversation']);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState<boolean>(false);
   const { conversations } = useConversationsChange();
   const { privateChats } = usePrivateChatsChange();
@@ -50,14 +53,29 @@ const ChatList: React.FC = () => {
     }
   }, [privateChats, setTargetIdToDelete, conversations, setIsDeleteModalVisible]);
 
+  const onSelectChatsTypeHandler = useCallback((type: ChatType) => (event: CheckboxChangeEvent) => {
+    const isChecked = event.target.checked;
+    setVisibleChatsType((types) => {
+      if (types.includes(type) && !isChecked) {
+        return types.filter((filteredType) => filteredType !== type);
+      }
+
+      return [...types, type];
+    });
+  }, [setVisibleChatsType]);
+
   return (
     <ChatListContainer>
-      <ChatListController users={users} />
+      <ChatListController
+        users={users}
+        onSelectChatsTypeHandler={onSelectChatsTypeHandler}
+        visibleChatsType={visibleChatsType}
+      />
       <div className="chat-list__items" onClick={onChatDeleteClickHandle}>
         {isNeedToShowNoChatsMessage && (
           <div>{NO_ANY_CHATS_TEXT}</div>
         )}
-        {(privateChats).map((chat) => {
+        {visibleChatsType.includes('private-chat') && (privateChats).map((chat) => {
           const chatId = chat.id;
 
           return (
@@ -79,7 +97,7 @@ const ChatList: React.FC = () => {
             </div>
           );
         })}
-        {conversations.map((conversation) => (
+        {visibleChatsType.includes('conversation') && conversations.map((conversation) => (
           <div data-user-chat-uid={conversation.id} key={conversation.id}>
             <Link
               to={`${MainRoutes.ConversationPage}/${conversation.id}`}

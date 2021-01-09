@@ -1,3 +1,5 @@
+export type ChatType = 'private-chat' | 'conversation';
+
 export interface InterlocutorEntity {
   uid: string,
   email: string,
