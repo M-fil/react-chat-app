@@ -15,6 +15,7 @@ import PrivateRoute from './core/components/PrivateRoute';
 import GlobalStyle from './core/styles';
 import Loader from './core/components/Loader';
 import { SocketEvents } from './core/constants/events';
+import { defaultFontStyles } from './core/styles/mixins';
 
 export const socket = io(process.env.REACT_APP_SERVER_URL as string);
 
@@ -44,7 +45,7 @@ const App: React.FC = () => {
           push
         />
       )}
-      <GlobalStyle />
+      <GlobalStyle fontFamily={defaultFontStyles.fontFamily} />
       <PrivateRoute
         path={[MainRoutes.ChatOverviewRoute_1, MainRoutes.ChatOverviewRoute_2]}
         Component={ChatOverviewPage}

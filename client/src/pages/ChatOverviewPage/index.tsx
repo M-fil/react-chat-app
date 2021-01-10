@@ -2,9 +2,9 @@ import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useSelector } from 'react-redux';
 
-import ChatNavBar from '../../core/components/Chat/ChatNavBar';
+import MainHeader from '../../core/components/MainHeader';
 import ChatList from './components/ChatsList';
-import ChatPageContainer from './styled';
+import MainContainer from '../../core/styles/components/MainContainer';
 import { selectCurrentChatId } from '../../core/selectors/chats';
 import { socket } from '../../App';
 import { SocketEvents } from '../../core/constants/events';
@@ -24,10 +24,10 @@ const ChatOverviewPage: React.FC = () => {
         <title>Chat Page</title>
       </Helmet>
 
-      <ChatPageContainer>
-        <ChatNavBar />
+      <MainContainer>
+        <MainHeader />
         <ChatList />
-      </ChatPageContainer>
+      </MainContainer>
     </>
   )
 }

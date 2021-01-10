@@ -2,8 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 
-import ChatNavBar from '../../core/components/Chat/ChatNavBar';
-import ChatPageContainer from '../ChatOverviewPage/styled';
+import MainHeader from '../../core/components/MainHeader';
+import MainContainer from '../../core/styles/components/MainContainer';
 import ChatMessages from '../../core/components/Chat/ChatMessages';
 import ChatInputContainer from '../../core/components/Chat/ChatInputContainer';
 import * as UserServices from '../../core/services/users';
@@ -57,9 +57,9 @@ const ChatWithUserPage: React.FC = () => {
   }, [chatId, currentUserUid]);
 
   return (
-    <ChatPageContainer>
+    <MainContainer>
         <>
-          <ChatNavBar
+          <MainHeader
             title={`Chat with ${interlocutorName}`}
             showBackButton
             backTo={MainRoutes.ChatOverviewRoute_2}
@@ -73,7 +73,7 @@ const ChatWithUserPage: React.FC = () => {
             )}
           <ChatInputContainer />
         </>
-    </ChatPageContainer>
+    </MainContainer>
   );
 };
 

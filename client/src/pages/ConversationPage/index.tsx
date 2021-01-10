@@ -2,8 +2,8 @@ import React, { useMemo, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 
-import ChatNavBar from '../../core/components/Chat/ChatNavBar';
-import ChatPageContainer from '../ChatOverviewPage/styled';
+import MainHeader from '../../core/components/MainHeader';
+import MainContainer from '../../core/styles/components/MainContainer';
 import ChatMessages from '../../core/components/Chat/ChatMessages';
 import ChatInputContainer from '../../core/components/Chat/ChatInputContainer';
 import * as ConversationServices from '../../core/services/conversation';
@@ -62,8 +62,8 @@ const ConversationPage: React.FC = () => {
   }
 
   return (
-    <ChatPageContainer>
-      <ChatNavBar
+    <MainContainer>
+      <MainHeader
         title={`Conversation`}
         showBackButton
         backTo={MainRoutes.ChatOverviewRoute_2}
@@ -74,7 +74,7 @@ const ConversationPage: React.FC = () => {
         : <ChatMessages />
       }
       <ChatInputContainer />
-    </ChatPageContainer>
+    </MainContainer>
   );
 };
 
