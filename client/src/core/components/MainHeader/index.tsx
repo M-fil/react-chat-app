@@ -12,6 +12,11 @@ import { createTitle } from '../../styles/components/Title';
 import { UnderlinedText } from '../../styles/components/Text';
 import ChatAvatar from '../../styles/components/ChatItemContainer/ChatAvatar';
 import { loggedUserAvatarStyles as avatarStyles } from '../../styles/colors';
+import ThemeToggler from '../ThemeToggler';
+import { setCurrentThemeToLocalStorage } from '../../utils/theme';
+import { ThemeModesType } from '../../constants/themes';
+import { changeThemeAction } from '../../redux/actions/theme';
+import { selectIsThemeTogglerChecked } from '../../selectors/theme';
 
 interface MainHeaderProps {
   title?: string;
@@ -27,6 +32,7 @@ const MainHeader: React.FC<MainHeaderProps> = ({
   const email = useSelector(selectUserEmail);
   const [isPopOverVisible, setIsPopOverVisible] = useState<boolean>(false);
   const letterForAvatar = useMemo(() => email[0], [email]);
+  const isThemeTogglerChecked = useSelector(selectIsThemeTogglerChecked);
   const dispatch = useDispatch();
 
   const onPopOverVisibilityChange = useCallback((value: boolean) => {
@@ -37,51 +43,63 @@ const MainHeader: React.FC<MainHeaderProps> = ({
     dispatch(logOutThunk());
   }, [dispatch]);
 
+  const onThemeChange = useCallback((isChecked: boolean) => {
+    const themeMode: ThemeModesType = isChecked ? 'light' : 'dark';
+    setCurrentThemeToLocalStorage(themeMode);
+    dispatch(changeThemeAction(themeMode));
+  }, [dispatch]);
+
   return (
     <MainHeaderContainer>
-      {showBackButton && (
-        <Link to={backTo}>
-          <ArrowLeftOutlined style={{ fontSize: '20px' }} />
-        </Link>
-      )}
-      <MainTitle
-        className="main-title"
-        fontSize="1.8rem"
-        lineHeight="2rem"
-        fontWeight="700"
-      >
-        {title || (
-          <UnderlinedText>
-            React Chat App
-          </UnderlinedText>
+      <div className="header-wrapper main-block-wrapper">
+        {showBackButton && (
+          <Link to={backTo}>
+            <ArrowLeftOutlined style={{ fontSize: '20px' }} />
+          </Link>
         )}
-      </MainTitle>
-      <Popover
-        content={(
-          <>
-            <h2>{email}</h2>
-            <Button type="dashed" onClick={onLogOutHandle}>
-              Log out
-            </Button>
-          </>
-        )}
-        trigger="click"
-        visible={isPopOverVisible}
-        onVisibleChange={onPopOverVisibilityChange}
-        placement="bottomRight"
-      >
-        <Button
-          htmlType="button"
-          type="text"
-          className="avatar-button"
+        <MainTitle
+          className="main-title"
+          fontSize="1.8rem"
+          lineHeight="2rem"
+          fontWeight="700"
         >
-          <ChatAvatar
-            {...avatarStyles}
+          {title || (
+            <UnderlinedText>
+              React Chat App
+            </UnderlinedText>
+          )}
+        </MainTitle>
+        <ThemeToggler
+          onChange={onThemeChange}
+          isChecked={isThemeTogglerChecked}
+        />
+        <Popover
+          content={(
+            <>
+              <h2>{email}</h2>
+              <Button type="dashed" onClick={onLogOutHandle}>
+                Log out
+              </Button>
+            </>
+          )}
+          trigger="click"
+          visible={isPopOverVisible}
+          onVisibleChange={onPopOverVisibilityChange}
+          placement="bottomRight"
+        >
+          <Button
+            htmlType="button"
+            type="text"
+            className="avatar-button"
           >
-            {letterForAvatar}
-          </ChatAvatar>
-        </Button>
-      </Popover>
+            <ChatAvatar
+              {...avatarStyles}
+            >
+              {letterForAvatar}
+            </ChatAvatar>
+          </Button>
+        </Popover>
+      </div>
     </MainHeaderContainer>
   );
 };

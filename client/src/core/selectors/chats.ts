@@ -1,7 +1,6 @@
 import { createSelector } from 'reselect';
 
 import { InterlocutorEntity, PrivateChatEntity } from '../interfaces/chat';
-import { ConversationEntity } from '../interfaces/conversation';
 import { AppState } from '../redux/reducers';
 import { State } from '../redux/reducers/chat';
 import { selectUserUid } from './auth';
@@ -11,6 +10,7 @@ const selectChatsState = (state: AppState): State => state.chat;
 export interface PrivateChatWithCurrentUserEntity {
   user: InterlocutorEntity | undefined,
   id: string,
+  lastMessage?: string,
 }
 
 export const selectChats = createSelector(
@@ -36,6 +36,7 @@ export const selectPrivateChatsWithCurrentUser = createSelector(
   ): PrivateChatWithCurrentUserEntity[] => privateChats.map((chat) => ({
     user: chat.interlocutors?.find((interlocutor) => interlocutor.uid === uid),
     id: chat.id,
+    lastMessage: chat.lastMessage,
   }))
 );
 
@@ -77,20 +78,4 @@ export const selectUsersFromCurrentChats = createSelector(
       const interlocutor = chat.interlocutors.find((interlocutor) => interlocutor.uid !== userUid);
       return interlocutor?.uid || '';
     })
-);
-
-export const selectChatByCurrentChatId = createSelector(
-  selectPrivateChats,
-  selectConversations,
-  selectCurrentChatId,
-  (
-    privateChats: PrivateChatEntity[],
-    conversations: ConversationEntity[],
-    chatId: string,
-  ): PrivateChatEntity | ConversationEntity | undefined => {
-    const targetChat = privateChats.find((chat) => chat.id === chatId);
-    const targetConversation = conversations.find((conversation) => conversation.id === chatId);
-
-    return targetChat || targetConversation;
-  }
 );

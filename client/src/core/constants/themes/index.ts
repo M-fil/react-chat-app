@@ -1,0 +1,62 @@
+import { DefaultTheme } from 'styled-components';
+
+export type ThemeModesType = 'dark' | 'light';
+export const THEME_LOCAL_STORAGE_NAME = 'THEME';
+
+export interface ThemeTypeProp {
+  header: {
+    backgroundColor: string,
+    color: string,
+    borderColor: string,
+  },
+  mainBlock: {
+    backgroundColor: string,
+    color: string,
+  },
+  footer: {
+    backgroundColor: string,
+    color: string,
+  }
+}
+
+interface Theme {
+  dark: ThemeTypeProp,
+  light: ThemeTypeProp,
+}
+
+export const themeStyles: Theme = {
+  dark: {
+    header: {
+      backgroundColor: '#000000',
+      color: '#ffffff',
+      borderColor: '#E3E7EC',
+    },
+    mainBlock: {
+      backgroundColor: '#F6F6F6',
+      color: '#000000',
+    },
+    footer: {
+      backgroundColor: '#F6F6F6',
+      color: '#000000'
+    },
+  },
+  light: {
+    header: {
+      backgroundColor: '#ffffff',
+      color: '#000000',
+      borderColor: '#E3E7EC',
+    },
+    mainBlock: {
+      backgroundColor: '#F6F6F6',
+      color: '#000000',
+    },
+    footer: {
+      backgroundColor: '#F6F6F6',
+      color: '#000000'
+    },
+  },
+}
+
+export const theme: DefaultTheme = {
+  mode: 'light',
+};

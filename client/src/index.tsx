@@ -6,6 +6,7 @@ import { Provider } from 'react-redux';
 
 import 'antd/dist/antd.css';
 import store from './core/redux/reducers';
+import './core/styles/styled.d.ts';
 
 ReactDOM.render(
   <React.StrictMode>

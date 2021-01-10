@@ -25,7 +25,7 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
   return (
     <ChatItemContainer data-user-chat-uid={conversationId}>
       <Link
-        to={`${MainRoutes.ChatOverviewRoute_2}/${conversationId}`}
+        to={`${MainRoutes.ConversationPage}/${conversationId}`}
         replace={false}
         className="chat-link"
       >

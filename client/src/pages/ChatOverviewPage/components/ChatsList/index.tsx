@@ -1,5 +1,4 @@
 import React, { useCallback, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { CheckboxChangeEvent } from 'antd/lib/checkbox';
 
 import ChatListContainer from './styled';
@@ -12,7 +11,6 @@ import { useConversationsChange } from '../../../../core/hooks/chat/useConversat
 import { usePrivateChatsChange } from '../../../../core/hooks/chat/usePrivateChatChange';
 import { useUsersInDBChange } from '../../../../core/hooks/user/useUsersInDBChange';
 import { ChatType } from '../../../../core/interfaces/chat';
-import { selectChatByCurrentChatId } from '../../../../core/selectors/chats';
 
 export interface SearchUserOption {
   email: string,
@@ -28,7 +26,6 @@ const ChatList: React.FC = () => {
   const { conversations } = useConversationsChange();
   const { privateChats } = usePrivateChatsChange();
   const { users } = useUsersInDBChange();
-  const targetChat = useSelector(selectChatByCurrentChatId);
   const isNeedToShowNoChatsMessage = privateChats.length === 0 && conversations.length === 0;
 
   const onChatDeleteClickHandle = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
@@ -87,7 +84,7 @@ const ChatList: React.FC = () => {
             key={chat.id}
             chatId={chat.id}
             userEmail={chat.user?.email || ''}
-            lastMessageText={targetChat?.lastMessage || ''}
+            lastMessageText={chat?.lastMessage || ''}
           />
         ))}
         {visibleChatsType.includes('conversation') && conversations.map((conversation) => (
@@ -95,7 +92,7 @@ const ChatList: React.FC = () => {
             key={conversation.id}
             conversationId={conversation.id}
             conversationName={conversation.name}
-            lastMessageText={targetChat?.lastMessage || ''}
+            lastMessageText={conversation?.lastMessage || ''}
           />
         ))}
       </div>
