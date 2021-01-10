@@ -6,7 +6,8 @@ import { MainRoutes } from '../../../../core/constants/routes/main-routes';
 import { DefaultButton } from '../../../../core/styles/components/Buttons';
 import { createTitle } from '../../../../core/styles/components/Title';
 import ChatItemContainer from '../../../../core/styles/components/ChatItemContainer';
-import ChatAvatar, { ChatAvatarProps } from '../../../../core/styles/components/ChatItemContainer/ChatAvatar';
+import ChatAvatar from '../../../../core/styles/components/ChatItemContainer/ChatAvatar';
+import { privateChatAvatarStyles as avatarStyles } from '../../../../core/styles/colors';
 
 interface ChatItemProps {
   chatId: string,
@@ -17,10 +18,6 @@ interface ChatItemProps {
 
 const UserEmailTitle = createTitle('h4');
 const NO_LAST_MESSAGE_TEXT = 'No any messages with this user';
-const avatarStyles: ChatAvatarProps = {
-  backgroundColor: '#F56A00',
-  textColor: '#fffff',
-};
 
 const ChatItem: React.FC<ChatItemProps> = ({
   chatId, userEmail, userAvatar, lastMessageText = NO_LAST_MESSAGE_TEXT,

@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Avatar, Button, Popover } from 'antd';
+import { Button, Popover } from 'antd';
 import { Link } from 'react-router-dom';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 
@@ -10,6 +10,8 @@ import MainHeaderContainer from './styled';
 import { MainRoutes } from '../../constants/routes/main-routes';
 import { createTitle } from '../../styles/components/Title';
 import { UnderlinedText } from '../../styles/components/Text';
+import ChatAvatar from '../../styles/components/ChatItemContainer/ChatAvatar';
+import { loggedUserAvatarStyles as avatarStyles } from '../../styles/colors';
 
 interface MainHeaderProps {
   title?: string;
@@ -73,9 +75,11 @@ const MainHeader: React.FC<MainHeaderProps> = ({
           type="text"
           className="avatar-button"
         >
-          <Avatar size="large">
+          <ChatAvatar
+            {...avatarStyles}
+          >
             {letterForAvatar}
-          </Avatar>
+          </ChatAvatar>
         </Button>
       </Popover>
     </MainHeaderContainer>

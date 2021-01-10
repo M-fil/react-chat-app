@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 import MainHeader from '../../core/components/MainHeader';
 import ChatList from './components/ChatsList';
 import MainContainer from '../../core/styles/components/MainContainer';
+import Footer from '../../core/components/Footer';
 import { selectCurrentChatId } from '../../core/selectors/chats';
 import { socket } from '../../App';
 import { SocketEvents } from '../../core/constants/events';
@@ -27,6 +28,7 @@ const ChatOverviewPage: React.FC = () => {
       <MainContainer>
         <MainHeader />
         <ChatList />
+        <Footer />
       </MainContainer>
     </>
   )

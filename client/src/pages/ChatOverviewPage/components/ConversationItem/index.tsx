@@ -7,14 +7,11 @@ import { MainRoutes } from '../../../../core/constants/routes/main-routes';
 import { DefaultButton } from '../../../../core/styles/components/Buttons';
 import { createTitle } from '../../../../core/styles/components/Title';
 import ChatItemContainer from '../../../../core/styles/components/ChatItemContainer';
-import ChatAvatar, { ChatAvatarProps } from '../../../../core/styles/components/ChatItemContainer/ChatAvatar';
+import ChatAvatar from '../../../../core/styles/components/ChatItemContainer/ChatAvatar';
+import { conversationAvatarStyles as avatarStyles } from '../../../../core/styles/colors';
 
 const ConversationNameTitle = createTitle('h4');
 const NO_LAST_MESSAGE_TEXT = 'No last message for this conversation';
-const avatarStyles: ChatAvatarProps = {
-  backgroundColor: '#87D068',
-  textColor: '#fffff',
-};
 
 interface ConversationItemProps {
   conversationName: string,
