@@ -7,6 +7,7 @@ const MainHeaderContainer = styled('div')`
   justify-content: space-between;
   align-items: center;
 
+  background: ${globalDefaultColors.mainHeaderBackground};
   box-shadow: 0 0 2rem 0 ${globalDefaultColors.borderColor};
   border-radius: 0 0 20px 20px;
   ${containerPadding};

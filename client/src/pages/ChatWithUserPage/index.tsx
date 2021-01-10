@@ -71,7 +71,7 @@ const ChatWithUserPage: React.FC = () => {
             : (
               <Loader />
             )}
-          <ChatInputContainer />
+          <ChatInputContainer type="private-chat" />
         </>
     </MainContainer>
   );

@@ -1,7 +1,7 @@
 require('./firebase');
 const http = require('http');
 const socketio = require('socket.io');
-const { createMessageInDB } = require('./services/chat');
+const { createMessageInDB, setLastMessageForChat } = require('./services/chat');
 
 const server = http.createServer();
 const io = socketio(server, {
@@ -17,7 +17,7 @@ io.on('connection', (socket) => {
     console.log('You were disconnected by the socket.io...');
   });
 
-  socket.on('sendMessage', (receiverId, message, isForAllClient) => {
+  socket.on('sendMessage', (receiverId, message, chatType, isForAllClient) => {
     console.log('receiverId', receiverId)
     console.log('all values', receiverId, message.text, isForAllClient)
     if (isForAllClient) {
@@ -26,7 +26,11 @@ io.on('connection', (socket) => {
       socket.to(receiverId).emit('message', message, receiverId);
     }
 
-    createMessageInDB(receiverId,  message);
+    const messageText = chatType === 'private-chat'
+      ? message.text
+      : `${message.from.email}: ${message.text}`;
+    createMessageInDB(receiverId, message);
+    setLastMessageForChat(receiverId, chatType, messageText);
   });
 
   socket.on('joinPrivateChat', (chatId) => {

@@ -5,6 +5,7 @@ import { DBCollections } from '../constants/db';
 import { MessageEntity } from '../interfaces/chat';
 import { socket } from '../../App';
 import { SocketEvents } from '../constants/events';
+import { ChatType } from '../interfaces/chat';
 
 export const updateChatsOfUser = (userId: string, newChats: string[]) => {
   return firebaseServices.rdb
@@ -39,5 +40,6 @@ export const addNotificationMessageInDB = (conversationId: string, text: string)
     createdAt: new Date(Date.now()),
     isNotification: true,
   };
-  socket.emit(SocketEvents.SendMessage, conversationId, message, true);
+  const chatType: ChatType = 'conversation';
+  socket.emit(SocketEvents.SendMessage, conversationId, message, chatType, true);
 };

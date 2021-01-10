@@ -6,6 +6,17 @@ const createMessageInDB = (chatId, message) => {
   return db.ref(`${DBCollections.Messages}/${chatId}`).push(message);
 };
 
+const setLastMessageForChat = (chatId, type, lastMessage) => {
+  const collection = type === 'private-chat'
+    ? DBCollections.PrivateChats
+    : DBCollections.Conversations;
+    
+  return db.ref
+    .ref(`${collection}/${chatId}/lastMessage`)
+    .set(lastMessage);
+}
+
 module.exports = {
   createMessageInDB,
+  setLastMessageForChat,
 };

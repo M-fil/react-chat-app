@@ -6,7 +6,7 @@ import shortid from 'shortid';
 
 import { SocketEvents } from '../../../constants/events';
 import { socket } from '../../../../App';
-import { MessageEntity } from '../../../interfaces/chat';
+import { ChatType, MessageEntity } from '../../../interfaces/chat';
 import { selectCurrentUser } from '../../../selectors/auth';
 import ChatInputWrapper from './styled';
 import { updateCurrentMessagesAction } from '../../../redux/actions/chat';
@@ -16,7 +16,11 @@ interface MessageFormValues {
   message: string;
 }
 
-const ChatInputContainer: React.FC = () => {
+interface ChatInputContainerProps {
+  type: ChatType,
+}
+
+const ChatInputContainer: React.FC<ChatInputContainerProps> = ({ type }) => {
   const currentUser = useSelector(selectCurrentUser);
   const chatId = useSelector(selectCurrentChatId);
   const [form] = Form.useForm();
@@ -35,12 +39,12 @@ const ChatInputContainer: React.FC = () => {
       createdAt: new Date(Date.now()),
     };
     dispatch(updateCurrentMessagesAction(message));
-    socket.emit(SocketEvents.SendMessage, chatId, message, false);
+    socket.emit(SocketEvents.SendMessage, chatId, message, type, false);
     form.resetFields();
     if (messageInputRef.current) {
       messageInputRef.current.focus();
     }
-  }, [currentUser, form, chatId, dispatch]);
+  }, [currentUser, form, chatId, dispatch, type]);
 
   return (
     <ChatInputWrapper>

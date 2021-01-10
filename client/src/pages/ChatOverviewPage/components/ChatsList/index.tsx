@@ -1,20 +1,18 @@
 import React, { useCallback, useState } from 'react';
-import { Button } from 'antd';
 import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
-import { DeleteOutlined } from '@ant-design/icons';
 import { CheckboxChangeEvent } from 'antd/lib/checkbox';
 
 import ChatListContainer from './styled';
 import DeleteModal from '../Modals/DeleteModal';
-import { MainRoutes } from '../../../../core/constants/routes/main-routes';
+import ChatItem from '../ChatItem';
+import ConversationItem from '../ConversationItem';
 import ChatListController from '../ChatListController';
 import { MessagesType } from '../../../../core/components/Chat/ChatMessages';
 import { useConversationsChange } from '../../../../core/hooks/chat/useConversationChange';
 import { usePrivateChatsChange } from '../../../../core/hooks/chat/usePrivateChatChange';
 import { useUsersInDBChange } from '../../../../core/hooks/user/useUsersInDBChange';
 import { ChatType } from '../../../../core/interfaces/chat';
-import { selectUserUid } from '../../../../core/selectors/auth';
+import { selectChatByCurrentChatId } from '../../../../core/selectors/chats';
 
 export interface SearchUserOption {
   email: string,
@@ -30,7 +28,7 @@ const ChatList: React.FC = () => {
   const { conversations } = useConversationsChange();
   const { privateChats } = usePrivateChatsChange();
   const { users } = useUsersInDBChange();
-  const currentUserUid = useSelector(selectUserUid);
+  const targetChat = useSelector(selectChatByCurrentChatId);
   const isNeedToShowNoChatsMessage = privateChats.length === 0 && conversations.length === 0;
 
   const onChatDeleteClickHandle = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
@@ -84,47 +82,21 @@ const ChatList: React.FC = () => {
         {visibleChatsType.length === 0 && !isNeedToShowNoChatsMessage && (
           <div>{NO_ANY_CHATS_TO_SHOW_TEXT}</div>
         )}
-        {visibleChatsType.includes('private-chat') && (privateChats).map((chat) => {
-          const chatId = chat.id;
-
-          return (
-            <div data-user-chat-uid={chatId} key={chatId}>
-              <Link
-                to={`${MainRoutes.ChatOverviewRoute_2}/${chatId}`}
-                key={chatId}
-                replace={false}
-              >
-                {chat.user?.email}
-              </Link>
-              <Button
-                type="primary"
-                className="delete-chat-button"
-                data-delete-chat-button="private"
-              >
-                <DeleteOutlined />
-              </Button>
-            </div>
-          );
-        })}
+        {visibleChatsType.includes('private-chat') && (privateChats).map((chat) => (
+          <ChatItem
+            key={chat.id}
+            chatId={chat.id}
+            userEmail={chat.user?.email || ''}
+            lastMessageText={targetChat?.lastMessage || ''}
+          />
+        ))}
         {visibleChatsType.includes('conversation') && conversations.map((conversation) => (
-          <div data-user-chat-uid={conversation.id} key={conversation.id}>
-            <Link
-              to={`${MainRoutes.ConversationPage}/${conversation.id}`}
-              key={conversation.id}
-              replace={false}
-            >
-              {conversation.name}
-            </Link>
-            {conversation.admin.uid === currentUserUid && (
-              <Button
-                type="primary"
-                className="delete-chat-button"
-                data-delete-chat-button="group"
-              >
-                <DeleteOutlined />
-              </Button>
-            )}
-          </div>
+          <ConversationItem
+            key={conversation.id}
+            conversationId={conversation.id}
+            conversationName={conversation.name}
+            lastMessageText={targetChat?.lastMessage || ''}
+          />
         ))}
       </div>
       <DeleteModal

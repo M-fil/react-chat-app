@@ -9,6 +9,7 @@ export interface InterlocutorEntity {
 export interface PrivateChatEntity {
   interlocutors: InterlocutorEntity[],
   id: string,
+  lastMessage?: string,
 }
 
 export interface FromUserEntity {

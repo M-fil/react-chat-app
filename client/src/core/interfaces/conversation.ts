@@ -5,4 +5,5 @@ export interface ConversationEntity {
   name: string;
   admin: FromUserEntity,
   interlocutors: InterlocutorEntity[],
+  lastMessage?: string,
 }

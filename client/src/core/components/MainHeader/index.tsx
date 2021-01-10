@@ -46,6 +46,7 @@ const MainHeader: React.FC<MainHeaderProps> = ({
         className="main-title"
         fontSize="1.8rem"
         lineHeight="2rem"
+        fontWeight="700"
       >
         {title || (
           <UnderlinedText>

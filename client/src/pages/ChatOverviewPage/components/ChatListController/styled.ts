@@ -5,11 +5,11 @@ const ChatNavBarContainer = styled('header')`
   justify-content: space-between;
   align-items: center;
 
+  margin-bottom: 40px;
+
   .create-buttons {
     display: flex;
     justify-content: space-between;
-
-    margin-bottom: 20px;
     
     & > *:not(:last-child) {
       margin-right: 10px;

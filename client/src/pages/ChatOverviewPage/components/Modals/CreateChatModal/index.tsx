@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Modal, Form, Input, Button, AutoComplete } from 'antd';
 import { useSelector } from 'react-redux';
 
@@ -22,7 +22,8 @@ interface CreateChatModalProps {
 }
 
 interface FormValues {
-  conversationName: string,
+  conversationName?: string,
+  selectedUserEmail?: string,
 }
 
 const defaultTitles = {
@@ -34,11 +35,11 @@ const { Option } = AutoComplete;
 const CreateChatModal: React.FC<CreateChatModalProps> = ({
   type, users, setIsVisible, isVisible,
 }) => {
-  const [selectedUserEmail, setSelectedUserEmail] = useState<string>('');
+  const [form] = Form.useForm();
+  const selectedUserEmail = useMemo(() => form.getFieldValue('selectedUserEmail'), [form]);
   const currentUser = useSelector(selectCurrentUser);
   const conversationIds = useSelector(selectUserConversationIds);
   const chatIds = useSelector(selectUserChatsIds);
-  const [form] = Form.useForm();
 
   const createNewConversation = useCallback((conversationName: string) => {
     const adminInterlocutor: InterlocutorEntity = {
@@ -53,8 +54,8 @@ const CreateChatModal: React.FC<CreateChatModalProps> = ({
     ChatServices.addNotificationMessageInDB(conversationId, `${currentUser.email} created this chat`);
   }, [currentUser, conversationIds]);
 
-  const createNewPrivateChat = useCallback(() => {
-    const selectedUser = users.find((user) => user.email === selectedUserEmail);
+  const createNewPrivateChat = useCallback((email: string) => {
+    const selectedUser = users.find((user) => user.email === email);
 
     if (selectedUser) {
       const interlocutors: InterlocutorEntity[] = [
@@ -77,9 +78,7 @@ const CreateChatModal: React.FC<CreateChatModalProps> = ({
 
       socket.emit(SocketEvents.CreateChat, selectedUser.uid);
     }
-
-    setSelectedUserEmail('');
-  }, [chatIds, users, currentUser.uid, currentUser.avatar, currentUser.email, selectedUserEmail]);
+  }, [chatIds, users, currentUser.uid, currentUser.avatar, currentUser.email]);
 
   const renderAutoCompleteValue = useCallback((value: UserEntity) => (
     <Option key={value.uid} value={value.email}>
@@ -98,12 +97,10 @@ const CreateChatModal: React.FC<CreateChatModalProps> = ({
   }, [form]);
 
   const onChatCreateSubmitHandler = useCallback((values: FormValues) => {
-    console.log('values', values);
-
     if (type === 'conversation') {
-      createNewConversation(values.conversationName);
+      createNewConversation(values.conversationName || '');
     } else {
-      createNewPrivateChat();
+      createNewPrivateChat(values.selectedUserEmail || '');
     }
 
     form.resetFields();
@@ -142,7 +139,7 @@ const CreateChatModal: React.FC<CreateChatModalProps> = ({
               rules={[{ required: true, message: 'Please input the conversation name!' }]}
             >
               <AutocompleteInput<UserEntity, string>
-                selectedValue={form.getFieldValue('selectedUserEmail')}
+                selectedValue={selectedUserEmail}
                 values={users}
                 renderValue={renderAutoCompleteValue}
                 renderOption={renderAutoCompleteOption}

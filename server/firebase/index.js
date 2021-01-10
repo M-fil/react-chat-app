@@ -6,6 +6,8 @@ admin.initializeApp({
   databaseURL: 'https://react-chat-app-e40b1-default-rtdb.firebaseio.com/',
 });
 
-module.exports = {
+const services = {
   db: admin.database(),
-}
+};
+
+module.exports = services;

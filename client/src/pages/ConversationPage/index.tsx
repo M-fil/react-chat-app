@@ -73,7 +73,7 @@ const ConversationPage: React.FC = () => {
         ? <Loader />
         : <ChatMessages />
       }
-      <ChatInputContainer />
+      <ChatInputContainer type="conversation" />
     </MainContainer>
   );
 };
