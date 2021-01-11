@@ -1,4 +1,5 @@
 export type ChatType = 'private-chat' | 'conversation';
+export type MessagePositionType = 'right' | 'left';
 
 export interface InterlocutorEntity {
   uid: string,

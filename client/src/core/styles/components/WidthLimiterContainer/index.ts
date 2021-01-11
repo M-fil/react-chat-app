@@ -10,6 +10,7 @@ const WidthLimiterContainer = styled('div').attrs(() => ({
   display: flex;
   flex-direction: column;
   ${(props) => props.applyFlexGrow ? 'flex-grow: 1' : ''};
+  overflow: hidden;
   
   width: 70%;
 `;

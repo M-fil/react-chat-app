@@ -9,6 +9,11 @@ import * as ChatServices from '../../../services/chats';
 import { selectUserUid } from '../../../selectors/auth';
 import { selectCurrentMessages, selectCurrentChatId } from '../../../selectors/chats';
 import { updateCurrentMessagesAction, setCurrentMessagesAction } from '../../../redux/actions/chat';
+import { MessageItem, MessageNotification } from '../../../styles/components/MessageItem';
+import { MessagePositionType } from '../../../interfaces/chat';
+import ChatAvatar from '../../../styles/components/ChatItemContainer/ChatAvatar';
+import { loggedUserAvatarStyles as avatarStyles } from '../../../styles/colors';
+import { UnderlinedText } from '../../../styles/components/Text';
 
 export type MessagesType = 'group' | 'private';
 const NO_MESSAGES_TEXT = 'No any messages with this user...';
@@ -77,26 +82,42 @@ const ChatMessages: React.FC = () => {
               </div>
             )}
             {currentMessages.map((message) => {
-              const isCurrentUser = message.from?.uid !== currentUserUid;
+              const isCurrentUser = message.from?.uid === currentUserUid;
+              const position: MessagePositionType = isCurrentUser ? 'right' : 'left';
+              const firstAvatarLetter = message.from?.email[0].toUpperCase();
 
               if (message.isNotification) {
                 return (
-                  <div key={message.id} className="notification-message">
-                    {message.text}
-                  </div>
+                  <MessageNotification
+                    key={message.id}
+                  >
+                    <div className="message-wrapper">
+                      {message.text}
+                    </div>
+                  </MessageNotification>
                 );
               }
       
               return (
-                <div
+                <MessageItem
                   key={message.id}
-                  className={isCurrentUser ? `message-right` : ''}
+                  position={position}
                 >
-                  <h3>{message.from?.email}</h3>
-                  <span>
-                    {message.text}
-                  </span>
-                </div>
+                  <ChatAvatar
+                    {...avatarStyles}
+                    className="sender-avatar"
+                  >
+                    {firstAvatarLetter}
+                  </ChatAvatar>
+                  <div className="message-wrapper">
+                    <UnderlinedText className="sender-name">
+                      {isCurrentUser ? 'You' : message.from?.email}
+                    </UnderlinedText>
+                    <span className="message-text">
+                      {message.text}
+                    </span>
+                  </div>
+                </MessageItem>
               );
             })}
           </div>

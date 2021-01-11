@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { AutoComplete, Button, message } from 'antd';
+import { AutoComplete, message } from 'antd';
 
 import AutocompleteInput from '../../../../core/components/AutocompleteInput';
 import ConversationControllerContainer from './styled';
@@ -14,6 +14,7 @@ import { socket } from '../../../../App';
 import { MainRoutes } from '../../../../core/constants/routes/main-routes';
 import { ConversationEntity } from '../../../../core/interfaces/conversation';
 import UsersListModal from '../UsersListModal';
+import { DefaultButton, InputButton } from '../../../../core/styles/components/Buttons';
 
 interface ConversationControllerProps {
   currentConversation: ConversationEntity | null,
@@ -121,17 +122,18 @@ const ConversationController: React.FC<ConversationControllerProps> = ({ current
           renderOption={renderAutoCompleteOption}
           onValueChange={onUserValueChange}
         />
-        <Button
+        <InputButton
+          height="30px"
           onClick={onAddToConversationClickHandler}
           onKeyDown={onAddToConversationKeyDownHandler}
         >
-          Add to Conversation
-        </Button>
+          Add
+        </InputButton>
       </div>
       <div className="other-buttons">
-        <Button onClick={showListOfUsers}>
+        <DefaultButton onClick={showListOfUsers}>
           See all Users of this conversation
-        </Button>
+        </DefaultButton>
       </div>
     </ConversationControllerContainer>
   );
