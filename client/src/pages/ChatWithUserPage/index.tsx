@@ -17,6 +17,7 @@ import { SocketEvents } from '../../core/constants/events';
 import { ChatPageParams } from '../../core/interfaces/routes';
 import { selectUserUid } from '../../core/selectors/auth';
 import { setCurrentChatIdAction } from '../../core/redux/actions/chat';
+import WidthLimiterContainer from '../../core/styles/components/WidthLimiterContainer';
 
 const ChatWithUserPage: React.FC = () => {
   const params: ChatPageParams = useParams();
@@ -66,7 +67,9 @@ const ChatWithUserPage: React.FC = () => {
           />
           {!isLoading
             ? (
-              <ChatMessages />
+              <WidthLimiterContainer applyFlexGrow>
+                <ChatMessages />
+              </WidthLimiterContainer>
             )
             : (
               <Loader />

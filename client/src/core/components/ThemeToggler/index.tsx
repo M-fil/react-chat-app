@@ -1,8 +1,8 @@
 import React from 'react';
-import { Switch } from 'antd';
 
 import LightModeIcon from '../../../core/assets/images/theme/light.svg';
 import DarkModeIcon from '../../../core/assets/images/theme/dark.svg';
+import ThemeTogglerContainer from './styled';
 
 interface ThemeTogglerProps {
   onChange: (isChecked: boolean) => void,
@@ -13,12 +13,13 @@ const ThemeToggler: React.FC<ThemeTogglerProps> = ({
   onChange, isChecked = true,
 }) => {
   return (
-    <Switch
+    <ThemeTogglerContainer
+      className="theme-switcher"
       checkedChildren={(
-        <img src={LightModeIcon} alt="light" />
+        <img className="theme-switcher-icon" src={LightModeIcon} alt="light" />
       )}
       unCheckedChildren={(
-        <img src={DarkModeIcon} alt="dark" />
+        <img className="theme-switcher-icon" src={DarkModeIcon} alt="dark" />
       )}
       defaultChecked
       checked={isChecked}

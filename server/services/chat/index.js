@@ -11,7 +11,7 @@ const setLastMessageForChat = (chatId, type, lastMessage) => {
     ? DBCollections.PrivateChats
     : DBCollections.Conversations;
     
-  return db.ref
+  return db
     .ref(`${collection}/${chatId}/lastMessage`)
     .set(lastMessage);
 }

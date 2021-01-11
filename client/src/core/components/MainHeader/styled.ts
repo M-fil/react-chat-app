@@ -10,8 +10,13 @@ const headerStyles = theme('mode', {
   `,
   dark: css`
     background: ${themeStyles.dark.header.backgroundColor};
-    box-shadow: 0 0 2rem 0 ${themeStyles.dark.header.backgroundColor};
+    box-shadow: 0 0 2rem 0 ${themeStyles.dark.header.borderColor};
   `,
+});
+
+const avatarBorderColor = theme('mode', {
+  light: '',
+  dark: themeStyles.dark.header.borderColor,
 });
 
 const textColor = theme('mode', {
@@ -24,8 +29,10 @@ const MainHeaderContainer = styled('div')`
   border-radius: 0 0 20px 20px;
   ${containerPadding};
   margin-bottom: 20px;
+  justify-content: center !important;
+  width: 100%;
   
-  .header-wrapper {
+  &, .header-wrapper {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -34,6 +41,10 @@ const MainHeaderContainer = styled('div')`
   .avatar-button {
     padding: 0;
     height: fit-content;
+
+    .ant-avatar {
+      border: 2px solid ${avatarBorderColor};
+    }
   }
 
   .main-title {

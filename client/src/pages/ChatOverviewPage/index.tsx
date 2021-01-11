@@ -9,6 +9,7 @@ import Footer from '../../core/components/Footer';
 import { selectCurrentChatId } from '../../core/selectors/chats';
 import { socket } from '../../App';
 import { SocketEvents } from '../../core/constants/events';
+import WidthLimiterContainer from '../../core/styles/components/WidthLimiterContainer';
 
 const ChatOverviewPage: React.FC = () => {
   const currentChatId = useSelector(selectCurrentChatId);
@@ -27,7 +28,9 @@ const ChatOverviewPage: React.FC = () => {
 
       <MainContainer>
         <MainHeader />
-        <ChatList />
+        <WidthLimiterContainer applyFlexGrow>
+          <ChatList />
+        </WidthLimiterContainer>
         <Footer />
       </MainContainer>
     </>

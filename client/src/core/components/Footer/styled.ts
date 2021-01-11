@@ -3,6 +3,9 @@ import { containerPadding } from '../../styles/components/MainContainer';
 
 const FooterContainer = styled('footer')`
   ${containerPadding};
+  display: flex;
+  justify-content: center;
+  width: 100%;
 
   .footer-wrapper, .links-container {
     display: flex;

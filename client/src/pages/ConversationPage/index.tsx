@@ -16,6 +16,7 @@ import { SocketEvents } from '../../core/constants/events';
 import { ConversationEntity } from '../../core/interfaces/conversation';
 import { setCurrentChatIdAction } from '../../core/redux/actions/chat';
 import ConversationController from './components/ConversationController';
+import WidthLimiterContainer from '../../core/styles/components/WidthLimiterContainer';
 
 const ConversationPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -68,10 +69,16 @@ const ConversationPage: React.FC = () => {
         showBackButton
         backTo={MainRoutes.ChatOverviewRoute_2}
       />
-      <ConversationController currentConversation={conversation} />
+      <WidthLimiterContainer>
+        <ConversationController currentConversation={conversation} />
+      </WidthLimiterContainer>
       {isLoading
         ? <Loader />
-        : <ChatMessages />
+        : (
+          <WidthLimiterContainer applyFlexGrow>
+            <ChatMessages />
+          </WidthLimiterContainer>
+        )
       }
       <ChatInputContainer type="conversation" />
     </MainContainer>

@@ -11,6 +11,7 @@ import { selectCurrentUser } from '../../../selectors/auth';
 import ChatInputWrapper from './styled';
 import { updateCurrentMessagesAction } from '../../../redux/actions/chat';
 import { selectCurrentChatId } from '../../../selectors/chats';
+import WidthLimiterContainer from '../../../styles/components/WidthLimiterContainer';
 
 interface MessageFormValues {
   message: string;
@@ -48,27 +49,29 @@ const ChatInputContainer: React.FC<ChatInputContainerProps> = ({ type }) => {
 
   return (
     <ChatInputWrapper>
-      <Form
-        className="chat-input-container"
-        onFinish={onMessageSubmit}
-        form={form}
-      >
-        <Form.Item
-          rules={[{ required: true }]}
-          name="message"
-          label="Input here your message"
-          className="chat-input-container__message-input"
+      <WidthLimiterContainer>
+        <Form
+          className="chat-input-container"
+          onFinish={onMessageSubmit}
+          form={form}
         >
-          <Input ref={messageInputRef} />
-        </Form.Item>
-        <Form.Item>
-          <Button
-            htmlType="submit"
+          <Form.Item
+            rules={[{ required: true }]}
+            name="message"
+            label="Input here your message"
+            className="chat-input-container__message-input"
           >
-            <SendOutlined />
-          </Button>
-        </Form.Item>
-      </Form>
+            <Input ref={messageInputRef} />
+          </Form.Item>
+          <Form.Item>
+            <Button
+              htmlType="submit"
+            >
+              <SendOutlined />
+            </Button>
+          </Form.Item>
+        </Form>
+      </WidthLimiterContainer>
     </ChatInputWrapper>
   );
 };

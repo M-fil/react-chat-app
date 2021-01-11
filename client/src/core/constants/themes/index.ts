@@ -27,17 +27,17 @@ interface Theme {
 export const themeStyles: Theme = {
   dark: {
     header: {
-      backgroundColor: '#000000',
-      color: '#ffffff',
+      backgroundColor: '#161B22',
+      color: 'rgb(201, 209, 217)',
       borderColor: '#E3E7EC',
     },
     mainBlock: {
-      backgroundColor: '#F6F6F6',
-      color: '#000000',
+      backgroundColor: '#06090F',
+      color: 'rgb(201, 209, 217)',
     },
     footer: {
       backgroundColor: '#F6F6F6',
-      color: '#000000'
+      color: 'rgb(201, 209, 217)'
     },
   },
   light: {
